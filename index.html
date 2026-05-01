@@ -1,11 +1,13 @@
-<!DOCTYPE html>
+import { useState } from "react";
+
+const code = `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Aaron Amend</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap');
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -13,7 +15,7 @@
     --black: #1a1a1a;
     --gray: rgba(0,0,0,0.55);
     --light-gray: rgba(0,0,0,0.35);
-    --font: 'Space Grotesk', -apple-system, sans-serif;
+    --font: 'Inter', -apple-system, sans-serif;
   }
 
   html { font-size: 16px; scroll-behavior: smooth; }
@@ -52,6 +54,26 @@
 
   nav a:hover { opacity: 1; }
 
+  /* SCROLL ARROW – fixed overlay */
+  .scroll-hint {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 1rem;
+    color: var(--gray);
+    text-align: center;
+    animation: bob 2s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 50;
+    transition: opacity 0.3s;
+  }
+
+  @keyframes bob {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50%       { transform: translateX(-50%) translateY(5px); }
+  }
+
   /* HOME PAGE */
   #home {
     min-height: 100vh;
@@ -63,7 +85,7 @@
 
   #home h1 {
     font-size: clamp(2.5rem, 8vw, 6rem);
-    font-weight: 400;
+    font-weight: 300;
     letter-spacing: 0.25rem;
     text-align: center;
     color: var(--black);
@@ -79,7 +101,6 @@
   .project-item {
     margin-bottom: 4vh;
     cursor: pointer;
-    position: relative;
   }
 
   .project-item img {
@@ -90,31 +111,18 @@
 
   .project-item:hover img { opacity: 0.85; }
 
-  .project-item .proj-label {
+  .feed-image, .feed-video {
+    width: 100%;
+    max-width: 700px;
+    padding: 0 2rem;
+  }
+
+  .feed-image img, .feed-video video {
+    width: 100%;
     display: block;
-    margin-top: 0.5rem;
-    font-size: 0.75rem;
-    font-weight: 400;
-    letter-spacing: 0.08rem;
-    color: var(--gray);
-    text-transform: uppercase;
   }
 
-  /* SCROLL ARROW */
-  .scroll-hint {
-    font-size: 1rem;
-    color: var(--gray);
-    text-align: center;
-    margin: 2rem 0 4rem;
-    animation: bob 2s ease-in-out infinite;
-  }
-
-  @keyframes bob {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(5px); }
-  }
-
-  /* BOTTOM NAV on home */
+  /* BOTTOM NAV */
   .bottom-nav {
     display: flex;
     flex-direction: column;
@@ -155,7 +163,7 @@
 
   .page h2 {
     font-size: clamp(1.5rem, 4vw, 2.5rem);
-    font-weight: 400;
+    font-weight: 300;
     margin-bottom: 0.5rem;
     line-height: 1.15;
   }
@@ -207,13 +215,11 @@
 
   #cv-page h2 {
     font-size: clamp(2rem, 6vw, 4rem);
-    font-weight: 400;
+    font-weight: 300;
     margin-bottom: 5rem;
   }
 
-  .cv-section {
-    margin-bottom: 1.75rem;
-  }
+  .cv-section { margin-bottom: 1.75rem; }
 
   .cv-section .date {
     font-family: 'Courier New', monospace;
@@ -241,102 +247,62 @@
     background: rgba(0,0,0,0.08);
     margin: 2.5rem 0;
   }
-
-  /* PLACEHOLDER IMAGE */
-  .img-placeholder {
-    width: 100%;
-    aspect-ratio: 16/10;
-    background: #f0f0f0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.7rem;
-    color: var(--light-gray);
-    letter-spacing: 0.05rem;
-    text-transform: uppercase;
-  }
-
-  /* TRANSITION */
-  #home, .page, #cv-page {
-    transition: opacity 0.25s ease;
-  }
-
-  .hidden { opacity: 0; pointer-events: none; }
-
-  .feed-image, .feed-video {
-    width: 100%;
-    max-width: 700px;
-    padding: 0 2rem;
-  }
-
-  .feed-image img, .feed-video video {
-    width: 100%;
-    display: block;
-  }
 </style>
 </head>
 <body>
 
 <nav>
   <a id="nav-back" onclick="goHome()" style="display:none">−</a>
-  <a id="nav-home-minus" onclick="goHome()" style="display:none">−</a>
   <div style="flex:1"></div>
   <a id="nav-cv" onclick="showCV()">+</a>
 </nav>
+
+<div class="scroll-hint" id="scroll-arrow">↓</div>
 
 <!-- HOME PAGE -->
 <div id="home">
   <h1>AARON AMEND</h1>
 
-  <div class="scroll-hint">↓</div>
-
   <div class="projects-feed">
 
     <div class="project-item" onclick="showProject('capella')">
-      <img src="capella_main.jpg" alt="Capella – Master Thesis 2025">
-      <span class="proj-label">Capella · Master Thesis · 2025</span>
+      <img src="capella_main.jpg" alt="Capella">
     </div>
 
     <div style="height:6vh"></div>
 
     <div class="project-item" onclick="showProject('twobarns')">
-      <img src="scheine_main.png" alt="Two Barns – Bachelor Thesis 2022">
-      <span class="proj-label">Two Barns · Bachelor Thesis · 2022</span>
+      <img src="scheine_main.png" alt="Two Barns">
     </div>
 
     <div style="height:6vh"></div>
 
     <div class="project-item" onclick="showProject('roubaix')">
-      <img src="Roubaix_main.jpeg" alt="ENSA Roubaix – Semester 2023">
-      <span class="proj-label">ENSA Roubaix · Semester Project · 2023</span>
+      <img src="Roubaix_main.jpeg" alt="ENSA Roubaix">
     </div>
 
     <div style="height:6vh"></div>
 
     <div class="project-item" onclick="showProject('groninger')">
-      <img src="groeninger_main.png" alt="Gröninger Hof – Semester 2022">
-      <span class="proj-label">Gröninger Hof · Semester Project · 2022</span>
+      <img src="groeninger_main.png" alt="Gröninger Hof">
     </div>
 
     <div style="height:6vh"></div>
 
     <div class="project-item" onclick="showProject('plancomun')">
-      <img src="Pantin_main.jpeg" alt="Plan Comùn – 2025/26">
-      <span class="proj-label">Plan Comùn · Paris · 2025–26</span>
+      <img src="Pantin_main.jpeg" alt="Plan Comùn">
     </div>
 
     <div style="height:6vh"></div>
 
     <div class="project-item" onclick="showProject('beten')">
-      <img src="beten_main.png" alt="Seminary and Church – Wittenberg">
-      <span class="proj-label">Seminary · Wittenberg · 2023</span>
+      <img src="beten_main.png" alt="Seminary – Wittenberg">
     </div>
 
     <div style="height:6vh"></div>
 
     <div class="project-item" onclick="showProject('mosterei')">
       <img src="mosterei_main.png" alt="Cider Factory – Thuringia">
-      <span class="proj-label">Cider Factory · Thuringia · 2022</span>
     </div>
 
     <div style="height:6vh"></div>
@@ -354,7 +320,6 @@
   </div>
 
   <div class="bottom-nav">
-    <div class="scroll-hint">↓</div>
     <a href="#" onclick="showProject('archive')">ARCHIVE</a>
     <a class="email-link" href="mailto:aaron.amend@icloud.com">EMAIL</a>
     <a href="./AA_CVP_PRINT22.pdf" target="_blank">↓ PORTFOLIO PDF</a>
@@ -367,29 +332,25 @@
   <h2>CV</h2>
 
   <div class="cv-section">
-    <div class="date">currently</div>
+    <div class="date">August 2025 – now</div>
     <div class="place">Plan Comùn Architects</div>
     <div class="location">Paris, France</div>
   </div>
-
   <div class="cv-section">
     <div class="date">July 2024 – September 2024</div>
     <div class="place">Bangkok Tokyo Architects</div>
     <div class="location">Bangkok, Thailand</div>
   </div>
-
   <div class="cv-section">
     <div class="date">January 2023 – July 2023</div>
     <div class="place">Nicolas Dorval-Bory Architects</div>
     <div class="location">Paris, France</div>
   </div>
-
   <div class="cv-section">
     <div class="date">March 2021 – August 2021</div>
     <div class="place">tiburg Architekten</div>
     <div class="location">Vienna, Austria</div>
   </div>
-
   <div class="cv-section">
     <div class="date">July 2019 – October 2019</div>
     <div class="place">Jourdan Müller Steinhauser Architects</div>
@@ -403,13 +364,11 @@
     <div class="place">M.Arch – ENSA Paris-Belleville</div>
     <div class="location">Paris, France</div>
   </div>
-
   <div class="cv-section">
     <div class="date">September 2024 – January 2025</div>
     <div class="place">Exchange – National Technical University</div>
     <div class="location">Taipei, Taiwan</div>
   </div>
-
   <div class="cv-section">
     <div class="date">October 2018 – April 2022</div>
     <div class="place">B.Sc. Architecture – Bauhaus Universität</div>
@@ -436,95 +395,69 @@
 
 <!-- PROJECT PAGES -->
 <div id="project-capella" class="page">
-  <div class="meta">Master Thesis · Paris, 2025</div>
+  <div class="meta">Master Thesis · ENSA Paris-Belleville · 2025</div>
   <h2>Capella – A Platform for Music and Community in La Chapelle</h2>
   <p class="description">
-    Supervised by Julie Lafortune, Etienne Barré and Julie Maillard at ENSA Paris-Belleville. 
+    Supervised by Julie Lafortune, Etienne Barré and Julie Maillard.
     In collaboration with Diego Kühle Ramos. Grade: A (with congratulations from the jury).<br><br>
-    The thesis examines rapid densification on public space in disadvantaged neighbourhoods. 
-    An infrastructural element that weaves the new neighbourhood into the existing urban fabric 
+    The thesis examines rapid densification on public space in disadvantaged neighbourhoods.
+    An infrastructural element that weaves the new neighbourhood into the existing urban fabric
     and creates a place for making and experiencing music.
   </p>
   <div class="gallery">
-    <div><div class="img-placeholder" style="aspect-ratio:16/9">Rendering – Cafeteria Panorama</div></div>
-    <div><div class="img-placeholder">Physical model 1:100</div></div>
-    <div><div class="img-placeholder">Axonometric – Platform connecting Ground and Public Levels</div></div>
-    <div><div class="img-placeholder">Interior Rendering – Event Space</div></div>
+    <div><img src="capella_main.jpg" alt="Capella"></div>
   </div>
 </div>
 
 <div id="project-twobarns" class="page">
-  <div class="meta">Bachelor Thesis · Weimar, 2022 · Grade 1,7</div>
+  <div class="meta">Bachelor Thesis · Bauhaus Universität Weimar · 2022 · Grade 1,7</div>
   <h2>Two Barns – Youth Housing in the Countryside</h2>
   <p class="description">
-    Supervised by Prof. Verena von Beckerath and Till Hoffmann at Bauhaus Universität Weimar.<br><br>
-    Two barns opposite each other were transformed: one for living with shared kitchens on two floors, 
-    one dedicated to concentrated work, usable as studio, home office, or event space.
+    Supervised by Prof. Verena von Beckerath and Till Hoffmann.<br><br>
+    Two barns opposite each other were transformed: one for living with shared kitchens
+    on two floors, one dedicated to concentrated work, usable as studio, home office, or event space.
   </p>
   <div class="gallery">
-    <div><div class="img-placeholder">Axonometric – Two Barns in Context</div></div>
-    <div><div class="img-placeholder">Rendering – Shared Kitchen</div></div>
-    <div><div class="img-placeholder">Perspective Section</div></div>
+    <div><img src="scheine_main.png" alt="Two Barns"></div>
   </div>
 </div>
 
 <div id="project-roubaix" class="page">
-  <div class="meta">Semester Project · ENSA Paris-Belleville, 2023 · Grade A</div>
+  <div class="meta">Semester Project · ENSA Paris-Belleville · 2023 · Grade A</div>
   <h2>ENSA Roubaix – Transformation of a Former Factory into an Architecture School</h2>
   <p class="description">
     Supervised by Prof. Louis Burriel. With Diego Kühle Ramos.<br><br>
-    Developing a consistent system of tools and parameters to organize interventions 
+    Developing a consistent system of tools and parameters to organize interventions
     and evaluate their consequences on the former Roubaix factory.
   </p>
   <div class="gallery">
-    <div><div class="img-placeholder">Rendering – Old and New Structure</div></div>
-    <div><div class="img-placeholder">Rendering – Work and Studio Spaces</div></div>
-    <div><div class="img-placeholder">Floorplan 1:200 – First Floor</div></div>
+    <div><img src="Roubaix_main.jpeg" alt="ENSA Roubaix"></div>
   </div>
 </div>
 
 <div id="project-groninger" class="page">
-  <div class="meta">Semester Project · Weimar, 2022 · Grade A</div>
+  <div class="meta">Semester Project · Bauhaus Universität Weimar · 2022 · Grade A</div>
   <h2>Gröninger Hof – Cooperative Transformation of a Parking Garage into Housing</h2>
   <p class="description">
     Supervised by Prof. Verena von Beckerath. With Charlotte Henschel and Vincent Mank.<br><br>
-    Reusing the existing structure of a Hamburg parking garage to generate new cooperative living space 
-    with three apartment typologies and hybrid office/communal areas.
+    Reusing the existing structure of a Hamburg parking garage to generate new cooperative
+    living space with three apartment typologies and hybrid office/communal areas.
   </p>
   <div class="gallery">
-    <div><div class="img-placeholder">Facade Rendering</div></div>
-    <div><div class="img-placeholder">Standard Floorplan 1:200</div></div>
-    <div><div class="img-placeholder">Interior Rendering</div></div>
+    <div><img src="groeninger_main.png" alt="Gröninger Hof"></div>
   </div>
 </div>
 
 <div id="project-plancomun" class="page">
-  <div class="meta">Plan Comùn Architects · Paris, 2025–26</div>
+  <div class="meta">Plan Comùn Architects · Paris · 2025–26</div>
   <h2>Plan Comùn – Paris</h2>
   <p class="description">
-    Competition work including Python (rehabilitation of 3 residential towers on the eastern Périphérique 
-    in collaboration with NP2F), Hebert Lot C (new residential plot in ZAC Hebert), 
-    Pantin St. Denis 2, and a full apartment renovation for a retiring couple in Paris 10ème.
+    Competition work including Python (rehabilitation of 3 residential towers on the eastern
+    Périphérique in collaboration with NP2F), Hebert Lot C, Pantin St. Denis 2, and a full
+    apartment renovation for a retiring couple in Paris 10ème.
   </p>
   <div class="gallery">
-    <div><div class="img-placeholder">Rendering – Python Competition</div></div>
-    <div><div class="img-placeholder">Floorplan – Apartment Paris 10ème</div></div>
-  </div>
-</div>
-
-<div id="project-archive" class="page">
-  <div class="meta">Archive</div>
-  <h2>Archive</h2>
-  <p class="description">Internships at Nicolas Dorval-Bory Architects, Bangkok Tokyo Architects, tiburg Architekten.</p>
-  <div class="gallery">
-    <div>
-      <img src="ndba_main.jpeg" alt="Nicolas Dorval-Bory Architects – Paris">
-      <div class="caption">Nicolas Dorval-Bory Architects – Paris</div>
-    </div>
-    <div>
-      <img src="tokyobkk_main.jpeg" alt="Bangkok Tokyo Architects – Bangkok">
-      <div class="caption">Bangkok Tokyo Architects – Bangkok</div>
-    </div>
+    <div><img src="Pantin_main.jpeg" alt="Plan Comùn"></div>
   </div>
 </div>
 
@@ -532,12 +465,11 @@
   <div class="meta">Semester Project · Bauhaus Universität Weimar</div>
   <h2>Seminary and Church for Educational Purposes in the Forest near Wittenberg</h2>
   <p class="description">
-    A seminary and church complex embedded in the landscape of the forest near Wittenberg. 
-    The project explores the relationship between sacred space, education, and nature — 
-    creating a place for contemplation and learning within the existing woodland.
+    A seminary and church complex embedded in the landscape of the forest near Wittenberg.
+    The project explores the relationship between sacred space, education, and nature.
   </p>
   <div class="gallery">
-    <div><img src="beten_main.png" alt="Seminary and Church – Wittenberg"></div>
+    <div><img src="beten_main.png" alt="Seminary – Wittenberg"></div>
   </div>
 </div>
 
@@ -545,12 +477,24 @@
   <div class="meta">Semester Project · Bauhaus Universität Weimar</div>
   <h2>Cider Factory on the Thuringia Cycle Path</h2>
   <p class="description">
-    A cider press and production facility sited along the Thuringia cycle path. 
-    The project integrates production, tasting, and public space — connecting 
-    the agricultural landscape with passing cyclists and visitors.
+    A cider press and production facility sited along the Thuringia cycle path,
+    connecting agricultural landscape with passing cyclists and visitors.
   </p>
   <div class="gallery">
     <div><img src="mosterei_main.png" alt="Cider Factory – Thuringia"></div>
+  </div>
+</div>
+
+<div id="project-archive" class="page">
+  <div class="meta">Archive · Internships & Competition Work</div>
+  <h2>Archive</h2>
+  <p class="description">
+    Selected work from internships at Nicolas Dorval-Bory Architects,
+    Bangkok Tokyo Architects, tiburg Architekten — and competition entries.
+  </p>
+  <div class="gallery">
+    <div><img src="ndba_main.jpeg" alt="Nicolas Dorval-Bory Architects"></div>
+    <div><img src="tokyobkk_main.jpeg" alt="Bangkok Tokyo Architects"></div>
   </div>
 </div>
 
@@ -559,18 +503,12 @@
   const cvPage = document.getElementById('cv-page');
   const navBack = document.getElementById('nav-back');
   const navCV = document.getElementById('nav-cv');
-  const navHomeMinus = document.getElementById('nav-home-minus');
+  const arrow = document.getElementById('scroll-arrow');
 
   let currentPage = 'home';
 
-  function showHome() {
-    home.style.display = 'flex';
-    home.style.opacity = '1';
-  }
-
-  function hideHome() {
-    home.style.display = 'none';
-  }
+  function showHome() { home.style.display = 'flex'; }
+  function hideHome() { home.style.display = 'none'; }
 
   function showCV() {
     hideHome();
@@ -580,6 +518,7 @@
     navCV.style.display = 'none';
     window.scrollTo(0, 0);
     currentPage = 'cv';
+    arrow.style.display = 'none';
   }
 
   function showProject(id) {
@@ -593,6 +532,7 @@
       navCV.style.display = 'none';
       window.scrollTo(0, 0);
       currentPage = id;
+      arrow.style.display = 'none';
     }
   }
 
@@ -604,7 +544,53 @@
     navCV.style.display = 'block';
     currentPage = 'home';
     window.scrollTo(0, 0);
+    arrow.style.display = 'block';
+    arrow.style.opacity = '1';
   }
+
+  window.addEventListener('scroll', () => {
+    if (currentPage !== 'home') return;
+    arrow.style.opacity = window.scrollY > 60 ? '0' : '1';
+  });
 </script>
 </body>
-</html>
+</html>`;
+
+export default function CodeViewer() {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(code).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
+  return (
+    <div style={{ fontFamily: "monospace", fontSize: "12px", height: "100vh", display: "flex", flexDirection: "column" }}>
+      <div style={{
+        display: "flex", justifyContent: "space-between", alignItems: "center",
+        padding: "10px 16px", borderBottom: "0.5px solid var(--color-border-tertiary)",
+        background: "var(--color-background-secondary)", position: "sticky", top: 0
+      }}>
+        <span style={{ fontSize: "13px", color: "var(--color-text-secondary)" }}>index.html</span>
+        <button onClick={handleCopy} style={{
+          fontSize: "12px", padding: "5px 14px", cursor: "pointer",
+          background: copied ? "var(--color-background-success)" : "var(--color-background-primary)",
+          color: copied ? "var(--color-text-success)" : "var(--color-text-primary)",
+          border: "0.5px solid var(--color-border-secondary)",
+          borderRadius: "var(--border-radius-md)", transition: "all 0.15s"
+        }}>
+          {copied ? "Kopiert ✓" : "Alles kopieren"}
+        </button>
+      </div>
+      <pre style={{
+        flex: 1, overflow: "auto", padding: "16px",
+        margin: 0, lineHeight: "1.6", whiteSpace: "pre-wrap", wordBreak: "break-word",
+        color: "var(--color-text-primary)", background: "var(--color-background-primary)"
+      }}>
+        {code}
+      </pre>
+    </div>
+  );
+}
