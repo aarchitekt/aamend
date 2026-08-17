@@ -10,20 +10,28 @@
 <meta property="og:type" content="website">
 <meta property="og:image" content="Capella_main.jpeg">
 <meta name="theme-color" content="#ffffff">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
     --black: #1a1a1a;
     --gray: rgba(0,0,0,0.5);
-    --font: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+    --ink: rgba(0,0,0,0.85);
   }
 
   html { font-size: 16px; scroll-behavior: smooth; }
 
+  body, a, .project-item, .carousel-btn, button {
+    cursor: url('assets/cursor.svg') 10 10, auto;
+  }
+
   body {
     background: #fff;
-    color: var(--black);
+    color: var(--ink);
     font-family: var(--font);
     font-weight: 400;
     overflow-x: hidden;
@@ -44,12 +52,11 @@
   nav a {
     pointer-events: all;
     text-decoration: none;
-    color: var(--black);
-    font-size: 1.25rem;
-    font-weight: 300;
-    opacity: 0.6;
+    color: var(--ink);
+    font-size: 1.375rem;
+    font-weight: 400;
+    opacity: 0.75;
     transition: opacity 0.15s;
-    cursor: pointer;
     line-height: 1;
   }
 
@@ -84,9 +91,10 @@
   }
 
   #home h1 {
-    font-size: clamp(2.5rem, 8vw, 6rem);
-    font-weight: 300;
-    letter-spacing: 0.3rem;
+    font-size: clamp(2.4rem, 4.6vw, 5.4rem);
+    font-weight: 400;
+    letter-spacing: 0.05em;
+    color: rgba(0,0,0,0.85);
     text-align: center;
     margin-bottom: 8vh;
   }
@@ -284,62 +292,18 @@
     margin: 2.5rem 0;
   }
 
-  /* ── CUSTOM CURSOR ── */
-  #cursor-ring {
-    position: fixed;
-    top: 0; left: 0;
-    width: 30px; height: 30px;
-    margin-left: -15px; margin-top: -15px;
-    border-radius: 50%;
-    border: 1px solid rgba(26,26,26,0.55);
-    pointer-events: none;
-    transform: translate(-100px,-100px);
-    transition: width .25s cubic-bezier(.2,.8,.2,1), height .25s cubic-bezier(.2,.8,.2,1),
-                margin .25s cubic-bezier(.2,.8,.2,1), background-color .25s, border-color .25s;
-    z-index: 9999;
-    display: flex; align-items: center; justify-content: center;
-  }
-  #cursor-ring span {
-    font-size: 0.6rem;
-    letter-spacing: 0.08rem;
-    text-transform: uppercase;
-    color: #1a1a1a;
-    opacity: 0;
-    transition: opacity .15s;
-    white-space: nowrap;
-  }
-  #cursor-ring.hover {
-    width: 68px; height: 68px;
-    margin-left: -34px; margin-top: -34px;
-    background: rgba(255,255,255,0.92);
-    border-color: transparent;
-    box-shadow: 0 2px 20px rgba(0,0,0,0.08);
-  }
-  #cursor-ring.hover.label span { opacity: 1; }
-  body.has-custom-cursor, body.has-custom-cursor a, body.has-custom-cursor .project-item,
-  body.has-custom-cursor .carousel-btn, body.has-custom-cursor button { cursor: none; }
-  @media (pointer: coarse), (hover: none) {
-    #cursor-ring { display: none !important; }
-    body.has-custom-cursor, body.has-custom-cursor a, body.has-custom-cursor .project-item { cursor: auto; }
-  }
-
-  /* ── PROJECT ITEM TITLE (desktop hover) ── */
+  /* ── PROJECT ITEM CAPTION (always visible, matches Cargo's image-link style) ── */
   .project-item { position: relative; }
   .project-item .item-title {
-    position: absolute;
-    left: 0; bottom: 0.9rem;
-    font-size: 0.7rem;
-    letter-spacing: 0.06rem;
-    text-transform: uppercase;
-    color: #fff;
-    background: rgba(26,26,26,0.55);
-    padding: 0.35rem 0.7rem;
-    opacity: 0;
-    transform: translateY(6px);
-    transition: opacity .25s, transform .25s;
-    pointer-events: none;
+    display: block;
+    margin-top: 0.7rem;
+    font-size: 1.05rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    color: rgba(0,0,0,0.75);
+    transition: color 0.15s;
   }
-  .project-item:hover .item-title { opacity: 1; transform: translateY(0); }
+  .project-item:hover .item-title { color: rgba(0,0,0,0.95); }
 
   /* fade-in on scroll */
   .project-item, .feed-image, .feed-video { opacity: 0; transform: translateY(14px); transition: opacity .6s ease, transform .6s ease; }
@@ -347,8 +311,6 @@
 </style>
 </head>
 <body>
-
-<div id="cursor-ring"><span>View</span></div>
 
 <nav>
   <a id="nav-back" onclick="goHome()" style="display:none">−</a>
@@ -689,27 +651,6 @@
       if (e.key === 'ArrowLeft')  page._step(-1);
     }
   });
-
-  /* ── Custom cursor ── */
-  const ring = document.getElementById('cursor-ring');
-  const isFine = matchMedia('(pointer: fine)').matches;
-  if (isFine) {
-    document.body.classList.add('has-custom-cursor');
-    window.addEventListener('mousemove', e => {
-      ring.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
-    });
-    document.addEventListener('mouseover', e => {
-      const item = e.target.closest('.project-item');
-      const link = e.target.closest('a, button:not(.carousel-btn)');
-      if (item) { ring.classList.add('hover', 'label'); }
-      else if (link) { ring.classList.add('hover'); ring.classList.remove('label'); }
-    });
-    document.addEventListener('mouseout', e => {
-      const item = e.target.closest('.project-item');
-      const link = e.target.closest('a, button:not(.carousel-btn)');
-      if (item || link) { ring.classList.remove('hover', 'label'); }
-    });
-  }
 
   /* ── Fade-in on scroll ── */
   const io = new IntersectionObserver((entries) => {
