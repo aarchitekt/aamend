@@ -3,7 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Aaron Amend</title>
+<title>Aaron Amend — Architect, Paris</title>
+<meta name="description" content="Aaron Amend is an architect based in Paris, currently at Plan Comùn. Selected projects, thesis work, and professional practice.">
+<meta property="og:title" content="Aaron Amend — Architect">
+<meta property="og:description" content="Selected architecture projects and practice, based in Paris.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="Capella_main.jpeg">
+<meta name="theme-color" content="#ffffff">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -277,9 +283,72 @@
     background: rgba(0,0,0,0.08);
     margin: 2.5rem 0;
   }
+
+  /* ── CUSTOM CURSOR ── */
+  #cursor-ring {
+    position: fixed;
+    top: 0; left: 0;
+    width: 30px; height: 30px;
+    margin-left: -15px; margin-top: -15px;
+    border-radius: 50%;
+    border: 1px solid rgba(26,26,26,0.55);
+    pointer-events: none;
+    transform: translate(-100px,-100px);
+    transition: width .25s cubic-bezier(.2,.8,.2,1), height .25s cubic-bezier(.2,.8,.2,1),
+                margin .25s cubic-bezier(.2,.8,.2,1), background-color .25s, border-color .25s;
+    z-index: 9999;
+    display: flex; align-items: center; justify-content: center;
+  }
+  #cursor-ring span {
+    font-size: 0.6rem;
+    letter-spacing: 0.08rem;
+    text-transform: uppercase;
+    color: #1a1a1a;
+    opacity: 0;
+    transition: opacity .15s;
+    white-space: nowrap;
+  }
+  #cursor-ring.hover {
+    width: 68px; height: 68px;
+    margin-left: -34px; margin-top: -34px;
+    background: rgba(255,255,255,0.92);
+    border-color: transparent;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+  }
+  #cursor-ring.hover.label span { opacity: 1; }
+  body.has-custom-cursor, body.has-custom-cursor a, body.has-custom-cursor .project-item,
+  body.has-custom-cursor .carousel-btn, body.has-custom-cursor button { cursor: none; }
+  @media (pointer: coarse), (hover: none) {
+    #cursor-ring { display: none !important; }
+    body.has-custom-cursor, body.has-custom-cursor a, body.has-custom-cursor .project-item { cursor: auto; }
+  }
+
+  /* ── PROJECT ITEM TITLE (desktop hover) ── */
+  .project-item { position: relative; }
+  .project-item .item-title {
+    position: absolute;
+    left: 0; bottom: 0.9rem;
+    font-size: 0.7rem;
+    letter-spacing: 0.06rem;
+    text-transform: uppercase;
+    color: #fff;
+    background: rgba(26,26,26,0.55);
+    padding: 0.35rem 0.7rem;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity .25s, transform .25s;
+    pointer-events: none;
+  }
+  .project-item:hover .item-title { opacity: 1; transform: translateY(0); }
+
+  /* fade-in on scroll */
+  .project-item, .feed-image, .feed-video { opacity: 0; transform: translateY(14px); transition: opacity .6s ease, transform .6s ease; }
+  .project-item.in-view, .feed-image.in-view, .feed-video.in-view { opacity: 1; transform: translateY(0); }
 </style>
 </head>
 <body>
+
+<div id="cursor-ring"><span>View</span></div>
 
 <nav>
   <a id="nav-back" onclick="goHome()" style="display:none">−</a>
@@ -296,43 +365,38 @@
   <div class="projects-feed">
 
     <div class="project-item" onclick="showProject('capella')">
-      <img src="Capella_main.jpeg" alt="">
-    </div>
+      <img loading="lazy" alt="Capella — platform for music and community, La Chapelle" src="Capella_main.jpeg">
+    <span class="item-title">Capella — Master Thesis</span></div>
     <div style="height:5vh;width:100%"></div>
 
     <div class="project-item" onclick="showProject('twobarns')">
-      <img src="scheine_main.png" alt="">
-    </div>
+      <img loading="lazy" alt="Two Barns — youth housing in the countryside" src="scheine_main.png">
+    <span class="item-title">Two Barns</span></div>
     <div style="height:5vh;width:100%"></div>
 
     <div class="project-item" onclick="showProject('roubaix')">
-      <img src="Roubaix_Main.jpeg" alt="">
-    </div>
+      <img loading="lazy" alt="ENSA Roubaix — factory transformed into architecture school" src="Roubaix_Main.jpeg">
+    <span class="item-title">ENSA Roubaix</span></div>
     <div style="height:5vh;width:100%"></div>
 
     <div class="project-item" onclick="showProject('groninger')">
-      <img src="groeninger_main.png" alt="">
-    </div>
+      <img loading="lazy" alt="Gröninger Hof — parking garage transformed into housing" src="groeninger_main.png">
+    <span class="item-title">Gröninger Hof</span></div>
     <div style="height:5vh;width:100%"></div>
 
     <div class="project-item" onclick="showProject('plancomun')">
-      <img src="Pantin_main.jpeg" alt="">
-    </div>
+      <img loading="lazy" alt="Plan Comùn — Paris, current practice work" src="Pantin_main.jpeg">
+    <span class="item-title">Plan Comùn — Paris</span></div>
     <div style="height:5vh;width:100%"></div>
 
     <div class="project-item" onclick="showProject('beten')">
-      <img src="beten_main.png" alt="">
-    </div>
+      <img loading="lazy" alt="Seminary and church near Wittenberg" src="beten_main.png">
+    <span class="item-title">Seminary & Church</span></div>
     <div style="height:5vh;width:100%"></div>
 
     <div class="project-item" onclick="showProject('mosterei')">
-      <img src="mosterei_main.png" alt="">
-    </div>
-    <div style="height:5vh;width:100%"></div>
-
-    <div class="feed-image">
-      <img src="atrium_main.png" alt="">
-    </div>
+      <img loading="lazy" alt="Cider factory on the Thuringia cycle path" src="mosterei_main.png">
+    <span class="item-title">Cider Factory</span></div>
     <div style="height:5vh;width:100%"></div>
 
     <div class="feed-video">
@@ -344,7 +408,6 @@
   <div class="bottom-nav">
     <a href="#" onclick="showProject('archive')">Archive</a>
     <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
-    <a href="./AA_CVP_PRINT22.pdf" target="_blank">↓ Portfolio PDF</a>
     <a href="https://aamend.com/pics" target="_blank">Pics</a>
   </div>
 </div>
@@ -626,6 +689,33 @@
       if (e.key === 'ArrowLeft')  page._step(-1);
     }
   });
+
+  /* ── Custom cursor ── */
+  const ring = document.getElementById('cursor-ring');
+  const isFine = matchMedia('(pointer: fine)').matches;
+  if (isFine) {
+    document.body.classList.add('has-custom-cursor');
+    window.addEventListener('mousemove', e => {
+      ring.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
+    });
+    document.addEventListener('mouseover', e => {
+      const item = e.target.closest('.project-item');
+      const link = e.target.closest('a, button:not(.carousel-btn)');
+      if (item) { ring.classList.add('hover', 'label'); }
+      else if (link) { ring.classList.add('hover'); ring.classList.remove('label'); }
+    });
+    document.addEventListener('mouseout', e => {
+      const item = e.target.closest('.project-item');
+      const link = e.target.closest('a, button:not(.carousel-btn)');
+      if (item || link) { ring.classList.remove('hover', 'label'); }
+    });
+  }
+
+  /* ── Fade-in on scroll ── */
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(en => { if (en.isIntersecting) { en.target.classList.add('in-view'); io.unobserve(en.target); } });
+  }, { threshold: 0.15 });
+  document.querySelectorAll('.project-item, .feed-image, .feed-video').forEach(el => io.observe(el));
 </script>
 </body>
 </html>
