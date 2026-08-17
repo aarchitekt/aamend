@@ -428,7 +428,7 @@
   </div>
 </div>
 
-<div class="bottom-nav" style="width:100vw;margin-left:calc(50% - 50vw);margin-right:calc(50% - 50vw);">
+<div id="cv-footer" class="bottom-nav" style="display:none;width:100vw;margin-left:calc(50% - 50vw);margin-right:calc(50% - 50vw);">
   <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
   <div class="footer-arrow">↓</div>
   <a href="https://aamend.com/pics" target="_blank">Pics</a>
@@ -732,6 +732,7 @@
     hideHome();
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     cvPage.classList.add('active');
+    document.getElementById('cv-footer').style.display = 'flex';
     navBack.style.display = 'block';
     navCV.style.display   = 'none';
     window.scrollTo(0, 0);
@@ -743,6 +744,7 @@
     hideHome();
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     cvPage.classList.remove('active');
+    document.getElementById('cv-footer').style.display = 'none';
     const page = document.getElementById(id);
     if (page) {
       page.classList.add('active');
@@ -758,6 +760,7 @@
   function goHome() {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     cvPage.classList.remove('active');
+    document.getElementById('cv-footer').style.display = 'none';
     showHome();
     navBack.style.display = 'none';
     navCV.style.display   = 'block';
