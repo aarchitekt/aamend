@@ -25,8 +25,13 @@
 
   html { font-size: 16px; scroll-behavior: smooth; }
 
-  body, a, .project-item, button {
-    cursor: url('assets/cursor.svg') 50 50, auto;
+  /* ── CURSOR: custom arrow by default, native hand pointer over clickable elements ── */
+  body {
+    cursor: url('assets/cursor-arrow.svg') 3 0, auto;
+  }
+
+  a, .project-item, .slide-arrow, button {
+    cursor: url('assets/cursor-hand.png') 12 2, pointer;
   }
 
   body {
@@ -112,7 +117,6 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    cursor: pointer;
   }
 
   .project-item img,
@@ -158,30 +162,79 @@
     color: var(--black);
   }
 
-  /* ── PROJECT PAGE (full-width stacked images, matches Cargo project pages) ── */
+  /* ── PROJECT PAGE: fullscreen slideshow, one image at a time ── */
   .page {
     display: none;
     min-height: 100vh;
-    padding-top: 5rem;
   }
 
-  .page.active { display: block; }
+  .page.active { display: flex; flex-direction: column; }
 
-  .project-gallery {
+  .slideshow {
+    position: relative;
     width: 100%;
-    max-width: 1800px;
-    margin: 0 auto;
-    padding: 0 2.5rem 6rem;
+    height: 100vh;
     display: flex;
-    flex-direction: column;
     align-items: center;
+    justify-content: center;
+    overflow: hidden;
   }
 
-  .project-gallery img,
-  .project-gallery video {
-    width: 100%;
-    display: block;
-    margin-bottom: 1.5rem;
+  .slide-track { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+
+  .slide-track img,
+  .slide-track video {
+    display: none;
+    max-width: 92vw;
+    max-height: 92vh;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+  }
+
+  .slide-track img.active,
+  .slide-track video.active { display: block; }
+
+  .slide-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    font-size: 2.2rem;
+    font-family: var(--font);
+    color: var(--black);
+    opacity: 0.3;
+    padding: 1.2rem 1.6rem;
+    transition: opacity 0.15s;
+    z-index: 10;
+    line-height: 1;
+  }
+
+  .slide-arrow:hover { opacity: 0.9; }
+  .slide-arrow.prev { left: 0.5rem; }
+  .slide-arrow.next { right: 0.5rem; }
+
+  .page[data-single="true"] .slide-arrow { display: none; }
+
+  /* ── PROJECT META (2-column info grid below slideshow) ── */
+  .project-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2.5rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 3rem 2.5rem 6rem;
+    font-size: 0.95rem;
+    line-height: 1.75;
+    color: rgba(0,0,0,0.68);
+    text-align: left;
+  }
+
+  .project-meta strong { font-weight: 600; color: rgba(0,0,0,0.9); }
+
+  @media (max-width: 700px) {
+    .project-meta { grid-template-columns: 1fr; gap: 1.25rem; padding: 2rem 1.5rem 4rem; }
   }
 
   /* ── CV PAGE ── */
@@ -236,11 +289,11 @@
     margin: 2.5rem 0;
   }
 
-  /* fade-in on scroll */
-  .project-item, .page .project-gallery img, .page .project-gallery video {
+  /* fade-in on scroll (home only) */
+  .project-item {
     opacity: 0; transform: translateY(14px); transition: opacity .6s ease, transform .6s ease;
   }
-  .project-item.in-view, .page .project-gallery img.in-view, .page .project-gallery video.in-view {
+  .project-item.in-view {
     opacity: 1; transform: translateY(0);
   }
 </style>
@@ -264,63 +317,63 @@
     <div class="project-item" onclick="showProject('page-project10')">
       <img src="img/python-2.jpg" alt="" style="width:27.72vw;max-width:499px;" loading="lazy">
     </div>
-    <div style="height:5vh;width:100%"></div>
+    <div style="height:9vh;width:100%"></div>
 
     <div class="project-item" onclick="showProject('page-pfe')">
       <img src="img/capella004.jpg" alt="" style="width:23.89vw;max-width:430px;" loading="lazy">
     </div>
-    <div style="height:5vh;width:100%"></div>
+    <div style="height:9vh;width:100%"></div>
 
     <div class="project-item" onclick="showProject('page-project11')">
       <img src="img/chartreuse_gif_01.gif" alt="" style="width:15.28vw;max-width:275px;" loading="lazy">
     </div>
-    <div style="height:5vh;width:100%"></div>
+    <div style="height:9vh;width:100%"></div>
 
     <div class="project-item" onclick="showProject('page-project6')">
       <img src="img/scheune_0.jpg" alt="" style="width:26.78vw;max-width:482px;" loading="lazy">
     </div>
-    <div style="height:5vh;width:100%"></div>
+    <div style="height:9vh;width:100%"></div>
 
     <div class="project-item" onclick="showProject('page-project9')">
       <img src="img/IMG_1359-2.jpg" alt="" style="width:23.89vw;max-width:430px;" loading="lazy">
     </div>
-    <div style="height:5vh;width:100%"></div>
+    <div style="height:9vh;width:100%"></div>
 
     <div class="project-item" onclick="showProject('page-project1')">
       <img src="img/Entwurf_Beten_Perspektiven__02.png" alt="" style="width:29.61vw;max-width:533px;" loading="lazy">
     </div>
-    <div style="height:5vh;width:100%"></div>
+    <div style="height:9vh;width:100%"></div>
 
     <div class="project-item" onclick="showProject('page-roubaix')">
       <img src="img/roubaix-out.jpg" alt="" style="width:29.61vw;max-width:533px;" loading="lazy">
     </div>
-    <div style="height:5vh;width:100%"></div>
+    <div style="height:9vh;width:100%"></div>
 
     <div class="project-item" onclick="showProject('page-project9')">
       <img src="img/gifquick.gif" alt="" style="width:25.78vw;max-width:464px;" loading="lazy">
     </div>
-    <div style="height:5vh;width:100%"></div>
+    <div style="height:9vh;width:100%"></div>
 
     <div class="project-item" onclick="showProject('page-project7')">
       <img src="img/st_24_1.jpeg" alt="" style="width:27.72vw;max-width:499px;" loading="lazy">
     </div>
-    <div style="height:5vh;width:100%"></div>
+    <div style="height:9vh;width:100%"></div>
 
     <div class="project-item" onclick="showProject('page-project4')">
       <img src="img/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben_3.png" alt="" style="width:31.5vw;max-width:567px;" loading="lazy">
     </div>
-    <div style="height:5vh;width:100%"></div>
+    <div style="height:9vh;width:100%"></div>
 
     <div class="project-item" onclick="showProject('page-project2')">
       <img src="img/rendu1.jpeg" alt="" style="width:29.61vw;max-width:533px;" loading="lazy">
       <img src="img/PerspektiveAu_en_3KM.png" alt="" style="width:44.89vw;max-width:808px;" loading="lazy">
     </div>
-    <div style="height:5vh;width:100%"></div>
+    <div style="height:9vh;width:100%"></div>
 
     <div class="project-item" onclick="showProject('page-project8')">
       <img src="img/Bildschirmfoto-2024-09-11-um-13.34.53.jpeg" alt="" style="width:30.56vw;max-width:550px;" loading="lazy">
     </div>
-    <div style="height:5vh;width:100%"></div>
+    <div style="height:9vh;width:100%"></div>
 
   </div>
 
@@ -368,158 +421,226 @@
 <!-- PROJECT PAGES -->
 
 <div id="page-project10" class="page">
-  <div class="project-gallery">
-    <img src="img/paython-drawing-2.jpg" alt="" loading="lazy">
-    <img src="img/paythd2.jpg" alt="" loading="lazy">
-    <img src="img/pyth3.png" alt="" loading="lazy">
+  <div class="slideshow" data-count="3">
+    <div class="slide-track">
+    <img src="img/paython-drawing-2.jpg" alt="">
+    <img src="img/paythd2.jpg" alt="">
+    <img src="img/pyth3.png" alt="">
+    </div>
+    <button class="slide-arrow prev" onclick="stepSlide(-1)">&#8249;</button>
+    <button class="slide-arrow next" onclick="stepSlide(1)">&#8250;</button>
   </div>
 </div>
 
 <div id="page-pfe" class="page">
-  <div class="project-gallery">
-    <img src="img/capella004.jpg" alt="" loading="lazy">
-    <img src="img/capella005.jpg" alt="" loading="lazy">
-    <img src="img/palimsest_nolli.jpg" alt="" loading="lazy">
-    <img src="img/axes_dB_Map.jpg" alt="" loading="lazy">
-    <img src="img/capella003.jpg" alt="" loading="lazy">
-    <img src="img/capella002.jpg" alt="" loading="lazy">
-    <img src="img/0016.jpg" alt="" loading="lazy">
-    <img src="img/capella001.jpg" alt="" loading="lazy">
-    <img src="img/0020.jpg" alt="" loading="lazy">
-    <img src="img/Modell_1_100.jpg" alt="" loading="lazy">
-    <img src="img/IMG_51.jpg" alt="" loading="lazy">
-    <img src="img/0017.jpg" alt="" loading="lazy">
-    <img src="img/0013.jpg" alt="" loading="lazy">
-    <img src="img/0002.jpg" alt="" loading="lazy">
-    <img src="img/0007.jpg" alt="" loading="lazy">
+  <div class="slideshow" data-count="15">
+    <div class="slide-track">
+    <img src="img/capella004.jpg" alt="">
+    <img src="img/capella005.jpg" alt="">
+    <img src="img/palimsest_nolli.jpg" alt="">
+    <img src="img/axes_dB_Map.jpg" alt="">
+    <img src="img/capella003.jpg" alt="">
+    <img src="img/capella002.jpg" alt="">
+    <img src="img/0016.jpg" alt="">
+    <img src="img/capella001.jpg" alt="">
+    <img src="img/0020.jpg" alt="">
+    <img src="img/Modell_1_100.jpg" alt="">
+    <img src="img/IMG_51.jpg" alt="">
+    <img src="img/0017.jpg" alt="">
+    <img src="img/0013.jpg" alt="">
+    <img src="img/0002.jpg" alt="">
+    <img src="img/0007.jpg" alt="">
+    </div>
+    <button class="slide-arrow prev" onclick="stepSlide(-1)">&#8249;</button>
+    <button class="slide-arrow next" onclick="stepSlide(1)">&#8250;</button>
+  </div>
+  <div class="project-meta">
+    <div class="meta-col">Projet Finale Étude<br><br>ENSA Belleville Paris<br><br>with Diego Kühle</div><div class="meta-col"><strong></strong>Capella: une plateforme pour la musique et la <br>communauté à La Chapelle<strong></strong></div>
   </div>
 </div>
 
 <div id="page-project11" class="page">
-  <div class="project-gallery">
-    <img src="img/abbruch.jpg" alt="" loading="lazy">
-    <img src="img/done.jpg" alt="" loading="lazy">
-    <img src="img/Axo2.png" alt="" loading="lazy">
-    <img src="img/Axo1.png" alt="" loading="lazy">
-    <img src="img/section.jpg" alt="" loading="lazy">
-    <img src="img/Chartreuse-3-pics.jpg" alt="" loading="lazy">
+  <div class="slideshow" data-count="6">
+    <div class="slide-track">
+    <img src="img/abbruch.jpg" alt="">
+    <img src="img/done.jpg" alt="">
+    <img src="img/Axo2.png" alt="">
+    <img src="img/Axo1.png" alt="">
+    <img src="img/section.jpg" alt="">
+    <img src="img/Chartreuse-3-pics.jpg" alt="">
+    </div>
+    <button class="slide-arrow prev" onclick="stepSlide(-1)">&#8249;</button>
+    <button class="slide-arrow next" onclick="stepSlide(1)">&#8250;</button>
   </div>
 </div>
 
 <div id="page-project6" class="page">
-  <div class="project-gallery">
-    <img src="img/Endprasentation_verschoben_3.png" alt="" loading="lazy">
-    <img src="img/Endprasentation_verschoben_7.png" alt="" loading="lazy">
-    <img src="img/Endprasentation_verschoben_4.png" alt="" loading="lazy">
-    <img src="img/Endprasentation_verschoben_6.png" alt="" loading="lazy">
-    <img src="img/Endprasentation_verschoben.png" alt="" loading="lazy">
-    <img src="img/Endprasentation_verschoben_2.png" alt="" loading="lazy">
-    <img src="img/Endprasentation_verschoben_5.png" alt="" loading="lazy">
+  <div class="slideshow" data-count="7">
+    <div class="slide-track">
+    <img src="img/Endprasentation_verschoben_3.png" alt="">
+    <img src="img/Endprasentation_verschoben_7.png" alt="">
+    <img src="img/Endprasentation_verschoben_4.png" alt="">
+    <img src="img/Endprasentation_verschoben_6.png" alt="">
+    <img src="img/Endprasentation_verschoben.png" alt="">
+    <img src="img/Endprasentation_verschoben_2.png" alt="">
+    <img src="img/Endprasentation_verschoben_5.png" alt="">
+    </div>
+    <button class="slide-arrow prev" onclick="stepSlide(-1)">&#8249;</button>
+    <button class="slide-arrow next" onclick="stepSlide(1)">&#8250;</button>
+  </div>
+  <div class="project-meta">
+    <div class="meta-col">Bachelor Thesis<br><br><strong>Designing and Housing Construction Studio<br><br>Bauahus Universität Weimar<br><br></strong>Prof. Verena von Beckerath</div><div class="meta-col">Transformation of Two Barns<br>Atelier and Student housing</div>
   </div>
 </div>
 
 <div id="page-project9" class="page">
-  <div class="project-gallery">
-    <img src="img/gifquick.gif" alt="" loading="lazy">
-    <img src="img/martel2.png" alt="" loading="lazy">
-    <img src="img/martel1.png" alt="" loading="lazy">
-    <img src="img/martel.png" alt="" loading="lazy">
-    <img src="img/pic.jpg" alt="" loading="lazy">
-    <img src="img/pic3.jpg" alt="" loading="lazy">
+  <div class="slideshow" data-count="6">
+    <div class="slide-track">
+    <img src="img/gifquick.gif" alt="">
+    <img src="img/martel2.png" alt="">
+    <img src="img/martel1.png" alt="">
+    <img src="img/martel.png" alt="">
+    <img src="img/pic.jpg" alt="">
+    <img src="img/pic3.jpg" alt="">
+    </div>
+    <button class="slide-arrow prev" onclick="stepSlide(-1)">&#8249;</button>
+    <button class="slide-arrow next" onclick="stepSlide(1)">&#8250;</button>
+  </div>
+  <div class="project-meta">
+    <div class="meta-col">Rue Martel<br>10e arrondissement de Paris</div><div class="meta-col">Apartment renovation for a couple after their children moved out. The existing interior is fully stripped and reorganized. Up to 20 cm of insulation are removed and replaced with custom crafted built in storage and a compact kitchen that redefine the living space. The former corridor disappears in favor of a triangular dressing room that reinterprets circulation and storage.</div>
   </div>
 </div>
 
 <div id="page-project1" class="page">
-  <div class="project-gallery">
-    <img src="img/Entwurf_Beten_Perspektiven__02.png" alt="" loading="lazy">
-    <img src="img/Beten_Ansicht_Materialitat_01.png" alt="" loading="lazy">
-    <img src="img/konzept_kirche.png" alt="" loading="lazy">
-    <img src="img/Beten_Grundriss_1-50_01.png" alt="" loading="lazy">
+  <div class="slideshow" data-count="4">
+    <div class="slide-track">
+    <img src="img/Entwurf_Beten_Perspektiven__02.png" alt="">
+    <img src="img/Beten_Ansicht_Materialitat_01.png" alt="">
+    <img src="img/konzept_kirche.png" alt="">
+    <img src="img/Beten_Grundriss_1-50_01.png" alt="">
+    </div>
+    <button class="slide-arrow prev" onclick="stepSlide(-1)">&#8249;</button>
+    <button class="slide-arrow next" onclick="stepSlide(1)">&#8250;</button>
+  </div>
+  <div class="project-meta">
+    <div class="meta-col"><strong>Design Studio <br><br>Bauhaus Universität Weimar<br></strong><br><br>Professor José Mario Gutiérrez Marquez<br><br>with Undine Kunze and Vincent Mank</div><div class="meta-col"><strong>Seminary and church for educational purposes in the forest near Wittenberg</strong></div>
   </div>
 </div>
 
 <div id="page-roubaix" class="page">
-  <div class="project-gallery">
-    <img src="img/solutions1.jpg" alt="" loading="lazy">
-    <img src="img/roubaix-mensa.jpg" alt="" loading="lazy">
-    <img src="img/roubaix-out.jpg" alt="" loading="lazy">
-    <img src="img/rubaix-atrium.jpg" alt="" loading="lazy">
-    <img src="img/roubaix-studio.jpg" alt="" loading="lazy">
-    <img src="img/A3_compressed_page-0004.jpg" alt="" loading="lazy">
-    <img src="img/A3_compressed_page-0003.jpg" alt="" loading="lazy">
-    <img src="img/4.jpeg" alt="" loading="lazy">
-    <img src="img/A3_compressed_page-0001.jpg" alt="" loading="lazy">
-    <img src="img/A3_compressed_page-0002.jpg" alt="" loading="lazy">
-    <img src="img/3.jpeg" alt="" loading="lazy">
-    <img src="img/2.jpeg" alt="" loading="lazy">
-    <img src="img/A3_compressed_page-0005.jpg" alt="" loading="lazy">
-    <img src="img/A3_compressed_page-0006.jpg" alt="" loading="lazy">
-    <img src="img/5.jpeg" alt="" loading="lazy">
-    <img src="img/7.jpeg" alt="" loading="lazy">
-    <img src="img/A3_compressed_page-0007.jpg" alt="" loading="lazy">
-    <img src="img/A3_compressed_page-0008.jpg" alt="" loading="lazy">
-    <img src="img/A3_compressed_page-0012.jpg" alt="" loading="lazy">
-    <img src="img/A3_compressed_page-0011.jpg" alt="" loading="lazy">
-    <img src="img/A3_compressed_page-0010.jpg" alt="" loading="lazy">
-    <img src="img/A3_compressed_page-0009.jpg" alt="" loading="lazy">
+  <div class="slideshow" data-count="22">
+    <div class="slide-track">
+    <img src="img/solutions1.jpg" alt="">
+    <img src="img/roubaix-mensa.jpg" alt="">
+    <img src="img/roubaix-out.jpg" alt="">
+    <img src="img/rubaix-atrium.jpg" alt="">
+    <img src="img/roubaix-studio.jpg" alt="">
+    <img src="img/A3_compressed_page-0004.jpg" alt="">
+    <img src="img/A3_compressed_page-0003.jpg" alt="">
+    <img src="img/4.jpeg" alt="">
+    <img src="img/A3_compressed_page-0001.jpg" alt="">
+    <img src="img/A3_compressed_page-0002.jpg" alt="">
+    <img src="img/3.jpeg" alt="">
+    <img src="img/2.jpeg" alt="">
+    <img src="img/A3_compressed_page-0005.jpg" alt="">
+    <img src="img/A3_compressed_page-0006.jpg" alt="">
+    <img src="img/5.jpeg" alt="">
+    <img src="img/7.jpeg" alt="">
+    <img src="img/A3_compressed_page-0007.jpg" alt="">
+    <img src="img/A3_compressed_page-0008.jpg" alt="">
+    <img src="img/A3_compressed_page-0012.jpg" alt="">
+    <img src="img/A3_compressed_page-0011.jpg" alt="">
+    <img src="img/A3_compressed_page-0010.jpg" alt="">
+    <img src="img/A3_compressed_page-0009.jpg" alt="">
+    </div>
+    <button class="slide-arrow prev" onclick="stepSlide(-1)">&#8249;</button>
+    <button class="slide-arrow next" onclick="stepSlide(1)">&#8250;</button>
+  </div>
+  <div class="project-meta">
+    <div class="meta-col"><strong>ENSA Belleville Paris<br></strong><br><br>Professor Luis Burriel<br><br>with Diego Kühle</div><div class="meta-col">Transformation of an Industrial Building into an Architecture School, Roubaix France</div>
   </div>
 </div>
 
 <div id="page-project7" class="page">
-  <div class="project-gallery">
-    <img src="img/st_24_6.jpeg" alt="" loading="lazy">
-    <img src="img/st_24_3.jpeg" alt="" loading="lazy">
-    <img src="img/st_24_2.jpeg" alt="" loading="lazy">
-    <img src="img/333.jpeg" alt="" loading="lazy">
-    <img src="img/st_24_5.jpeg" alt="" loading="lazy">
-    <img src="img/3334.png" alt="" loading="lazy">
-    <img src="img/st_24_1.jpeg" alt="" loading="lazy">
-    <img src="img/st_24_7.jpeg" alt="" loading="lazy">
-    <img src="img/st_24_4.jpeg" alt="" loading="lazy">
+  <div class="slideshow" data-count="9">
+    <div class="slide-track">
+    <img src="img/st_24_6.jpeg" alt="">
+    <img src="img/st_24_3.jpeg" alt="">
+    <img src="img/st_24_2.jpeg" alt="">
+    <img src="img/333.jpeg" alt="">
+    <img src="img/st_24_5.jpeg" alt="">
+    <img src="img/3334.png" alt="">
+    <img src="img/st_24_1.jpeg" alt="">
+    <img src="img/st_24_7.jpeg" alt="">
+    <img src="img/st_24_4.jpeg" alt="">
+    </div>
+    <button class="slide-arrow prev" onclick="stepSlide(-1)">&#8249;</button>
+    <button class="slide-arrow next" onclick="stepSlide(1)">&#8250;</button>
+  </div>
+  <div class="project-meta">
+    <div class="meta-col"><strong>École Nationale Supérieure d'Architecture de Paris-Belleville<br><br></strong>Prof. Paul Gresham</div><div class="meta-col">Experimental Music Residency in Pantin</div>
   </div>
 </div>
 
 <div id="page-project4" class="page">
-  <div class="project-gallery">
-    <img src="img/Bildschirmfoto-2022-11-25-um-15.21.33-Kopie.jpg" alt="" loading="lazy">
-    <img src="img/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben_3.png" alt="" loading="lazy">
-    <img src="img/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben_5.png" alt="" loading="lazy">
-    <img src="img/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben_4.png" alt="" loading="lazy">
-    <img src="img/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben_6.png" alt="" loading="lazy">
-    <img src="img/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben.png" alt="" loading="lazy">
-    <img src="img/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben_2.png" alt="" loading="lazy">
-    <img src="img/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben_81.png" alt="" loading="lazy">
-    <img src="img/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben_9.png" alt="" loading="lazy">
-    <img src="img/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben_8.png" alt="" loading="lazy">
-    <img src="img/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben_7.png" alt="" loading="lazy">
+  <div class="slideshow" data-count="11">
+    <div class="slide-track">
+    <img src="img/Bildschirmfoto-2022-11-25-um-15.21.33-Kopie.jpg" alt="">
+    <img src="img/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben_3.png" alt="">
+    <img src="img/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben_5.png" alt="">
+    <img src="img/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben_4.png" alt="">
+    <img src="img/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben_6.png" alt="">
+    <img src="img/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben.png" alt="">
+    <img src="img/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben_2.png" alt="">
+    <img src="img/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben_81.png" alt="">
+    <img src="img/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben_9.png" alt="">
+    <img src="img/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben_8.png" alt="">
+    <img src="img/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben_7.png" alt="">
+    </div>
+    <button class="slide-arrow prev" onclick="stepSlide(-1)">&#8249;</button>
+    <button class="slide-arrow next" onclick="stepSlide(1)">&#8250;</button>
+  </div>
+  <div class="project-meta">
+    <div class="meta-col"><strong>Housing Studio<br><br>Bauhaus Universität Weimar<br><br></strong>Prof. Verena von Beckerath<br><br>with Charlotte Henschel and Vincent Mank</div><div class="meta-col">Gröninger Hof cooperative Competition<br><br>transforming parking to housing</div>
   </div>
 </div>
 
 <div id="page-project2" class="page">
-  <div class="project-gallery">
-    <img src="img/portfolio_aaron_amend_verschoben.png" alt="" loading="lazy">
-    <img src="img/PerspektiveAu_en_3KM.png" alt="" loading="lazy">
-    <img src="img/Bildschirmfoto-2022-12-05-um-13.28.33.png" alt="" loading="lazy">
-    <img src="img/faltung.png" alt="" loading="lazy">
-    <img src="img/grundrissclean.png" alt="" loading="lazy">
-    <img src="img/fassadenschnitt.png" alt="" loading="lazy">
-    <img src="img/Explo_Iso_200_Final_3KM.png" alt="" loading="lazy">
+  <div class="slideshow" data-count="7">
+    <div class="slide-track">
+    <img src="img/portfolio_aaron_amend_verschoben.png" alt="">
+    <img src="img/PerspektiveAu_en_3KM.png" alt="">
+    <img src="img/Bildschirmfoto-2022-12-05-um-13.28.33.png" alt="">
+    <img src="img/faltung.png" alt="">
+    <img src="img/grundrissclean.png" alt="">
+    <img src="img/fassadenschnitt.png" alt="">
+    <img src="img/Explo_Iso_200_Final_3KM.png" alt="">
+    </div>
+    <button class="slide-arrow prev" onclick="stepSlide(-1)">&#8249;</button>
+    <button class="slide-arrow next" onclick="stepSlide(1)">&#8250;</button>
+  </div>
+  <div class="project-meta">
+    <div class="meta-col"><strong>Design and Building Construction Studio<br><br></strong><br>Prof. Dipl. -Ing. Johannes Kühn <br><br>with Elias Martinez</div><div class="meta-col"><strong>Cider factory on the Thuringia cycle path</strong></div>
   </div>
 </div>
 
 <div id="page-project8" class="page">
-  <div class="project-gallery">
-    <img src="img/Bildschirmfoto-2024-09-11-um-13.34.22.jpeg" alt="" loading="lazy">
-    <img src="img/Bildschirmfoto-2024-09-11-um-13.33.53.jpeg" alt="" loading="lazy">
-    <img src="img/Bildschirmfoto-2024-09-11-um-13.35.34.jpeg" alt="" loading="lazy">
-    <img src="img/Bildschirmfoto-2024-09-11-um-13.35.29.jpeg" alt="" loading="lazy">
-    <img src="img/Bildschirmfoto-2024-09-11-um-13.37.30.jpeg" alt="" loading="lazy">
-    <img src="img/Bildschirmfoto-2024-09-11-um-13.35.39.jpeg" alt="" loading="lazy">
-    <img src="img/Bildschirmfoto-2024-09-11-um-13.35.16.jpeg" alt="" loading="lazy">
-    <img src="img/Bildschirmfoto-2024-09-11-um-13.35.01.jpeg" alt="" loading="lazy">
-    <img src="img/Bildschirmfoto-2024-09-11-um-13.34.53.jpeg" alt="" loading="lazy">
-    <img src="img/Bildschirmfoto-2024-09-11-um-13.34.41.jpeg" alt="" loading="lazy">
-    <img src="img/Bildschirmfoto-2024-09-11-um-13.34.31.jpeg" alt="" loading="lazy">
+  <div class="slideshow" data-count="11">
+    <div class="slide-track">
+    <img src="img/Bildschirmfoto-2024-09-11-um-13.34.22.jpeg" alt="">
+    <img src="img/Bildschirmfoto-2024-09-11-um-13.33.53.jpeg" alt="">
+    <img src="img/Bildschirmfoto-2024-09-11-um-13.35.34.jpeg" alt="">
+    <img src="img/Bildschirmfoto-2024-09-11-um-13.35.29.jpeg" alt="">
+    <img src="img/Bildschirmfoto-2024-09-11-um-13.37.30.jpeg" alt="">
+    <img src="img/Bildschirmfoto-2024-09-11-um-13.35.39.jpeg" alt="">
+    <img src="img/Bildschirmfoto-2024-09-11-um-13.35.16.jpeg" alt="">
+    <img src="img/Bildschirmfoto-2024-09-11-um-13.35.01.jpeg" alt="">
+    <img src="img/Bildschirmfoto-2024-09-11-um-13.34.53.jpeg" alt="">
+    <img src="img/Bildschirmfoto-2024-09-11-um-13.34.41.jpeg" alt="">
+    <img src="img/Bildschirmfoto-2024-09-11-um-13.34.31.jpeg" alt="">
+    </div>
+    <button class="slide-arrow prev" onclick="stepSlide(-1)">&#8249;</button>
+    <button class="slide-arrow next" onclick="stepSlide(1)">&#8250;</button>
   </div>
 </div>
 
@@ -530,6 +651,7 @@
   const navCV   = document.getElementById('nav-cv');
   const arrow   = document.getElementById('scroll-arrow');
   let currentPage = 'home';
+  let slideIdx = 0;
 
   /* ── Navigation ── */
   function showHome() { home.style.display = 'flex'; }
@@ -558,7 +680,7 @@
       window.scrollTo(0, 0);
       currentPage = id;
       arrow.style.display = 'none';
-      page.querySelectorAll('img, video').forEach(el => io.observe(el));
+      initSlideshow(page);
     }
   }
 
@@ -574,13 +696,39 @@
     arrow.style.opacity = '1';
   }
 
+  /* ── Slideshow ── */
+  function initSlideshow(page) {
+    const track = page.querySelector('.slide-track');
+    const slides = Array.from(track.children);
+    slideIdx = 0;
+    slides.forEach((el, i) => el.classList.toggle('active', i === 0));
+    page.dataset.single = slides.length <= 1 ? 'true' : 'false';
+    page._slides = slides;
+  }
+
+  function stepSlide(dir) {
+    const page = document.getElementById(currentPage);
+    if (!page || !page._slides) return;
+    const slides = page._slides;
+    if (!slides.length) return;
+    slides[slideIdx].classList.remove('active');
+    slideIdx = (slideIdx + dir + slides.length) % slides.length;
+    slides[slideIdx].classList.add('active');
+  }
+
+  document.addEventListener('keydown', e => {
+    if (!currentPage.startsWith('page-')) return;
+    if (e.key === 'ArrowRight') stepSlide(1);
+    if (e.key === 'ArrowLeft')  stepSlide(-1);
+  });
+
   /* Arrow fades on scroll */
   window.addEventListener('scroll', () => {
     if (currentPage !== 'home') return;
     arrow.style.opacity = window.scrollY > 60 ? '0' : '1';
   });
 
-  /* ── Fade-in on scroll ── */
+  /* ── Fade-in on scroll (home feed) ── */
   const io = new IntersectionObserver((entries) => {
     entries.forEach(en => { if (en.isIntersecting) { en.target.classList.add('in-view'); io.unobserve(en.target); } });
   }, { threshold: 0.1 });
