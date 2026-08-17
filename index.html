@@ -25,7 +25,7 @@
 
   html { font-size: 16px; scroll-behavior: smooth; }
 
-  body, a, .project-item, .carousel-btn, button {
+  body, a, .project-item, button {
     cursor: url('assets/cursor.svg') 10 10, auto;
   }
 
@@ -101,8 +101,8 @@
 
   .projects-feed {
     width: 100%;
-    max-width: 700px;
-    padding: 0 2rem;
+    max-width: 1720px;
+    padding: 0 2.5rem;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -154,7 +154,7 @@
     color: var(--black);
   }
 
-  /* ── PROJECT PAGE ── */
+  /* ── PROJECT PAGE (full-width stacked images, matches Cargo project pages) ── */
   .page {
     display: none;
     min-height: 100vh;
@@ -163,64 +163,27 @@
 
   .page.active { display: block; }
 
-  /* CAROUSEL */
-  .carousel {
-    position: relative;
+  .project-gallery {
     width: 100%;
-    background: #f5f5f5;
-  }
-
-  .carousel-track {
-    width: 100%;
-    min-height: 40vh;
+    max-width: 1720px;
+    margin: 0 auto;
+    padding: 0 2.5rem;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
   }
 
-  .carousel-track img,
-  .carousel-track video {
+  .project-gallery img,
+  .project-gallery video {
     width: 100%;
     display: block;
-    max-height: 78vh;
-    object-fit: contain;
+    margin-bottom: 1.5rem;
   }
 
-  .carousel-btn {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 1.5rem;
-    color: var(--black);
-    opacity: 0.3;
-    padding: 1.2rem 1.8rem;
-    transition: opacity 0.15s;
-    z-index: 10;
-    font-family: var(--font);
-    line-height: 1;
-  }
-
-  .carousel-btn:hover    { opacity: 0.85; }
-  .carousel-btn.prev     { left: 0; }
-  .carousel-btn.next     { right: 0; }
-  .carousel-btn:disabled { opacity: 0.08; cursor: default; }
-
-  .carousel-counter {
-    position: absolute;
-    bottom: 0.7rem;
-    right: 1rem;
-    font-size: 0.65rem;
-    color: var(--gray);
-    letter-spacing: 0.05rem;
-  }
-
-  /* PROJECT INFO – below carousel, centered */
+  /* PROJECT INFO – small, muted, below the images */
   .project-info {
     max-width: 600px;
-    margin: 0 auto;
+    margin: 2rem auto 0;
     padding: 2.5rem 2rem 6rem;
     text-align: center;
   }
@@ -266,6 +229,15 @@
     margin-bottom: 5rem;
   }
 
+  .cv-text {
+    font-size: 0.95rem;
+    line-height: 1.85;
+    color: rgba(0,0,0,0.7);
+    margin-bottom: 1.75rem;
+  }
+
+  .cv-text strong { font-weight: 600; color: rgba(0,0,0,0.85); }
+
   .cv-section { margin-bottom: 1.75rem; }
 
   .cv-section .date {
@@ -292,18 +264,7 @@
     margin: 2.5rem 0;
   }
 
-  /* ── PROJECT ITEM CAPTION (always visible, matches Cargo's image-link style) ── */
   .project-item { position: relative; }
-  .project-item .item-title {
-    display: block;
-    margin-top: 0.7rem;
-    font-size: 1.05rem;
-    font-weight: 500;
-    letter-spacing: 0.02em;
-    color: rgba(0,0,0,0.75);
-    transition: color 0.15s;
-  }
-  .project-item:hover .item-title { color: rgba(0,0,0,0.95); }
 
   /* fade-in on scroll */
   .project-item, .feed-image, .feed-video { opacity: 0; transform: translateY(14px); transition: opacity .6s ease, transform .6s ease; }
@@ -327,38 +288,31 @@
   <div class="projects-feed">
 
     <div class="project-item" onclick="showProject('capella')">
-      <img loading="lazy" alt="Capella — platform for music and community, La Chapelle" src="Capella_main.jpeg">
-    <span class="item-title">Capella — Master Thesis</span></div>
+      <img loading="lazy" alt="Capella — platform for music and community, La Chapelle" src="Capella_main.jpeg"></div>
     <div style="height:5vh;width:100%"></div>
 
     <div class="project-item" onclick="showProject('twobarns')">
-      <img loading="lazy" alt="Two Barns — youth housing in the countryside" src="scheine_main.png">
-    <span class="item-title">Two Barns</span></div>
+      <img loading="lazy" alt="Two Barns — youth housing in the countryside" src="scheine_main.png"></div>
     <div style="height:5vh;width:100%"></div>
 
     <div class="project-item" onclick="showProject('roubaix')">
-      <img loading="lazy" alt="ENSA Roubaix — factory transformed into architecture school" src="Roubaix_Main.jpeg">
-    <span class="item-title">ENSA Roubaix</span></div>
+      <img loading="lazy" alt="ENSA Roubaix — factory transformed into architecture school" src="Roubaix_Main.jpeg"></div>
     <div style="height:5vh;width:100%"></div>
 
     <div class="project-item" onclick="showProject('groninger')">
-      <img loading="lazy" alt="Gröninger Hof — parking garage transformed into housing" src="groeninger_main.png">
-    <span class="item-title">Gröninger Hof</span></div>
+      <img loading="lazy" alt="Gröninger Hof — parking garage transformed into housing" src="groeninger_main.png"></div>
     <div style="height:5vh;width:100%"></div>
 
     <div class="project-item" onclick="showProject('plancomun')">
-      <img loading="lazy" alt="Plan Comùn — Paris, current practice work" src="Pantin_main.jpeg">
-    <span class="item-title">Plan Comùn — Paris</span></div>
+      <img loading="lazy" alt="Plan Comùn — Paris, current practice work" src="Pantin_main.jpeg"></div>
     <div style="height:5vh;width:100%"></div>
 
     <div class="project-item" onclick="showProject('beten')">
-      <img loading="lazy" alt="Seminary and church near Wittenberg" src="beten_main.png">
-    <span class="item-title">Seminary & Church</span></div>
+      <img loading="lazy" alt="Seminary and church near Wittenberg" src="beten_main.png"></div>
     <div style="height:5vh;width:100%"></div>
 
     <div class="project-item" onclick="showProject('mosterei')">
-      <img loading="lazy" alt="Cider factory on the Thuringia cycle path" src="mosterei_main.png">
-    <span class="item-title">Cider Factory</span></div>
+      <img loading="lazy" alt="Cider factory on the Thuringia cycle path" src="mosterei_main.png"></div>
     <div style="height:5vh;width:100%"></div>
 
     <div class="feed-video">
@@ -376,67 +330,36 @@
 
 <!-- CV -->
 <div id="cv-page">
-  <h2>CV</h2>
+  <h2>about</h2>
 
-  <div class="cv-section">
-    <div class="date">August 2025 – now</div>
-    <div class="place">Plan Comùn Architects</div>
-    <div class="location">Paris, France</div>
-  </div>
-  <div class="cv-section">
-    <div class="date">July 2024 – September 2024</div>
-    <div class="place">Bangkok Tokyo Architects</div>
-    <div class="location">Bangkok, Thailand</div>
-  </div>
-  <div class="cv-section">
-    <div class="date">January 2023 – July 2023</div>
-    <div class="place">Nicolas Dorval-Bory Architects</div>
-    <div class="location">Paris, France</div>
-  </div>
-  <div class="cv-section">
-    <div class="date">March 2021 – August 2021</div>
-    <div class="place">tiburg Architekten</div>
-    <div class="location">Vienna, Austria</div>
-  </div>
-  <div class="cv-section">
-    <div class="date">July 2019 – October 2019</div>
-    <div class="place">Jourdan Müller Steinhauser Architects</div>
-    <div class="location">Frankfurt am Main, Germany</div>
-  </div>
+  <p class="cv-text">Aaron Amend is an architect based in Paris, currently collaborating with <strong>Plan Comùn</strong>. Previously he has worked at <strong>Nicolas Dorval-Bory Architectes</strong> in Paris, <strong>Bangkok Tokyo Architecture</strong> in Bangkok, and <strong>tiburg Architekten</strong> in Vienna.</p>
 
-  <div class="cv-divider"></div>
-
-  <div class="cv-section">
-    <div class="date">July 2025</div>
-    <div class="place">M.Arch – ENSA Paris-Belleville</div>
-    <div class="location">Paris, France</div>
-  </div>
-  <div class="cv-section">
-    <div class="date">September 2024 – January 2025</div>
-    <div class="place">Exchange – National Technical University</div>
-    <div class="location">Taipei, Taiwan</div>
-  </div>
-  <div class="cv-section">
-    <div class="date">October 2018 – April 2022</div>
-    <div class="place">B.Sc. Architecture – Bauhaus Universität</div>
-    <div class="location">Weimar, Germany</div>
-  </div>
+  <p class="cv-text">He completed his Master of Architecture at the <strong>École Nationale Supérieure d'Architecture de Paris-Belleville</strong>, with a semester at the <strong>NTUT Taipei</strong>, after graduating with a Bachelor of Architecture from <strong>Bauhaus-Universität Weimar</strong> and an exchange semester at the <strong>TU Vienna</strong>.</p>
 
   <div class="cv-divider"></div>
 
   <div class="cv-section" style="font-family:'Courier New',monospace;font-size:0.78rem;line-height:1.9;color:var(--gray)">
-    Archicad · Autocad · Revit<br>
-    Cinema 4D · Rhino · Blender · SketchUp<br>
-    Adobe Suite · AI image prompting<br>
-    German · French · English · Japanese (A1)
+    German, English and French, (Japanese A2)<br><br>
+    ARCHICAD (Drawing + BIM Modelling)<br>
+    AUTOCAD<br>
+    REVIT<br>
+    QGIS (Geoinformation and Analytics Software)<br><br>
+    CINEMA4D (+CORONA RENDER PLUGIN)<br>
+    BLENDER (RENDERING + ANIMATION)<br>
+    RHINO (+Grasshopper)<br><br>
+    Adobe Suite<br><br>
+    Nano Banana Ai Imaging<br>
+    Claude Ai coding and analysis<br><br>
+    Final Cut (Video)<br>
+    Ableton Live (Sound)
   </div>
 
   <div class="cv-divider"></div>
 
   <div class="cv-section">
-    <div class="date">Contact</div>
     <div class="place" style="font-size:0.85rem">aaron.amend@icloud.com</div>
     <div class="location">+49 (0) 17631300747</div>
+    <div class="location">+33 (0) 749176753</div>
   </div>
 </div>
 
@@ -444,12 +367,7 @@
 <!-- Add more images by extending data-images, e.g.: '["img1.jpg","img2.jpg","img3.jpg"]' -->
 
 <div id="project-capella" class="page" data-images='["Capella_main.jpeg"]'>
-  <div class="carousel">
-    <div class="carousel-track"></div>
-    <button class="carousel-btn prev">←</button>
-    <button class="carousel-btn next">→</button>
-    <span class="carousel-counter"></span>
-  </div>
+  <div class="project-gallery"></div>
   <div class="project-info">
     <div class="meta">Master Thesis · ENSA Paris-Belleville · 2025</div>
     <h2>Capella – A Platform for Music and Community in La Chapelle</h2>
@@ -458,12 +376,7 @@
 </div>
 
 <div id="project-twobarns" class="page" data-images='["scheine_main.png"]'>
-  <div class="carousel">
-    <div class="carousel-track"></div>
-    <button class="carousel-btn prev">←</button>
-    <button class="carousel-btn next">→</button>
-    <span class="carousel-counter"></span>
-  </div>
+  <div class="project-gallery"></div>
   <div class="project-info">
     <div class="meta">Bachelor Thesis · Bauhaus Universität Weimar · 2022 · Grade 1,7</div>
     <h2>Two Barns – Youth Housing in the Countryside</h2>
@@ -472,12 +385,7 @@
 </div>
 
 <div id="project-roubaix" class="page" data-images='["Roubaix_Main.jpeg"]'>
-  <div class="carousel">
-    <div class="carousel-track"></div>
-    <button class="carousel-btn prev">←</button>
-    <button class="carousel-btn next">→</button>
-    <span class="carousel-counter"></span>
-  </div>
+  <div class="project-gallery"></div>
   <div class="project-info">
     <div class="meta">Semester Project · ENSA Paris-Belleville · 2023 · Grade A</div>
     <h2>ENSA Roubaix – Transformation of a Former Factory into an Architecture School</h2>
@@ -486,12 +394,7 @@
 </div>
 
 <div id="project-groninger" class="page" data-images='["groeninger_main.png"]'>
-  <div class="carousel">
-    <div class="carousel-track"></div>
-    <button class="carousel-btn prev">←</button>
-    <button class="carousel-btn next">→</button>
-    <span class="carousel-counter"></span>
-  </div>
+  <div class="project-gallery"></div>
   <div class="project-info">
     <div class="meta">Semester Project · Bauhaus Universität Weimar · 2022 · Grade A</div>
     <h2>Gröninger Hof – Cooperative Transformation of a Parking Garage into Housing</h2>
@@ -500,12 +403,7 @@
 </div>
 
 <div id="project-plancomun" class="page" data-images='["Pantin_main.jpeg"]'>
-  <div class="carousel">
-    <div class="carousel-track"></div>
-    <button class="carousel-btn prev">←</button>
-    <button class="carousel-btn next">→</button>
-    <span class="carousel-counter"></span>
-  </div>
+  <div class="project-gallery"></div>
   <div class="project-info">
     <div class="meta">Plan Comùn Architects · Paris · 2025–26</div>
     <h2>Plan Comùn – Paris</h2>
@@ -514,12 +412,7 @@
 </div>
 
 <div id="project-beten" class="page" data-images='["beten_main.png"]'>
-  <div class="carousel">
-    <div class="carousel-track"></div>
-    <button class="carousel-btn prev">←</button>
-    <button class="carousel-btn next">→</button>
-    <span class="carousel-counter"></span>
-  </div>
+  <div class="project-gallery"></div>
   <div class="project-info">
     <div class="meta">Semester Project · Bauhaus Universität Weimar</div>
     <h2>Seminary and Church for Educational Purposes in the Forest near Wittenberg</h2>
@@ -528,12 +421,7 @@
 </div>
 
 <div id="project-mosterei" class="page" data-images='["mosterei_main.png"]'>
-  <div class="carousel">
-    <div class="carousel-track"></div>
-    <button class="carousel-btn prev">←</button>
-    <button class="carousel-btn next">→</button>
-    <span class="carousel-counter"></span>
-  </div>
+  <div class="project-gallery"></div>
   <div class="project-info">
     <div class="meta">Semester Project · Bauhaus Universität Weimar</div>
     <h2>Cider Factory on the Thuringia Cycle Path</h2>
@@ -542,12 +430,7 @@
 </div>
 
 <div id="project-archive" class="page" data-images='["ndba_main.jpeg","tokyobkk_main.jpeg"]'>
-  <div class="carousel">
-    <div class="carousel-track"></div>
-    <button class="carousel-btn prev">←</button>
-    <button class="carousel-btn next">→</button>
-    <span class="carousel-counter"></span>
-  </div>
+  <div class="project-gallery"></div>
   <div class="project-info">
     <div class="meta">Archive · Internships & Competition Work</div>
     <h2>Archive</h2>
@@ -563,34 +446,17 @@
   const arrow   = document.getElementById('scroll-arrow');
   let currentPage = 'home';
 
-  /* ── Carousel ── */
-  function initCarousel(page) {
+  /* ── Gallery: full-width stacked images (matches Cargo project pages) ── */
+  function renderGallery(page) {
     const images  = JSON.parse(page.dataset.images || '[]');
-    const track   = page.querySelector('.carousel-track');
-    const prev    = page.querySelector('.carousel-btn.prev');
-    const next    = page.querySelector('.carousel-btn.next');
-    const counter = page.querySelector('.carousel-counter');
-    if (!images.length) return;
-    let idx = 0;
-
-    function render() {
-      const src = images[idx];
+    const gallery = page.querySelector('.project-gallery');
+    if (!gallery || gallery.childElementCount) return; // render once
+    gallery.innerHTML = images.map(src => {
       const isVideo = /\.(mp4|webm|mov)$/i.test(src);
-      track.innerHTML = isVideo
+      return isVideo
         ? `<video src="${src}" autoplay muted loop playsinline></video>`
         : `<img src="${src}" alt="">`;
-      prev.disabled = idx === 0;
-      next.disabled = idx === images.length - 1;
-      counter.textContent = images.length > 1 ? `${idx + 1} / ${images.length}` : '';
-    }
-
-    prev.onclick = () => { if (idx > 0)               { idx--; render(); } };
-    next.onclick = () => { if (idx < images.length-1) { idx++; render(); } };
-    page._step   = dir => {
-      if (dir < 0 && idx > 0)               { idx--; render(); }
-      if (dir > 0 && idx < images.length-1) { idx++; render(); }
-    };
-    render();
+    }).join('');
   }
 
   /* ── Navigation ── */
@@ -620,7 +486,7 @@
       window.scrollTo(0, 0);
       currentPage = id;
       arrow.style.display = 'none';
-      initCarousel(page);
+      renderGallery(page);
     }
   }
 
@@ -640,16 +506,6 @@
   window.addEventListener('scroll', () => {
     if (currentPage !== 'home') return;
     arrow.style.opacity = window.scrollY > 60 ? '0' : '1';
-  });
-
-  /* Keyboard arrows */
-  document.addEventListener('keydown', e => {
-    if (currentPage === 'home' || currentPage === 'cv') return;
-    const page = document.getElementById('project-' + currentPage);
-    if (page && page._step) {
-      if (e.key === 'ArrowRight') page._step(1);
-      if (e.key === 'ArrowLeft')  page._step(-1);
-    }
   });
 
   /* ── Fade-in on scroll ── */
