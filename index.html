@@ -8,7 +8,7 @@
 <meta property="og:title" content="Aaron Amend — Architect">
 <meta property="og:description" content="Selected architecture projects and practice, based in Paris.">
 <meta property="og:type" content="website">
-<meta property="og:image" content="Capella_main.jpeg">
+<meta property="og:image" content="img/capella004.jpg">
 <meta name="theme-color" content="#ffffff">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,7 +26,7 @@
   html { font-size: 16px; scroll-behavior: smooth; }
 
   body, a, .project-item, button {
-    cursor: url('assets/cursor.svg') 10 10, auto;
+    cursor: url('assets/cursor.svg') 50 50, auto;
   }
 
   body {
@@ -101,7 +101,7 @@
 
   .projects-feed {
     width: 100%;
-    max-width: 1720px;
+    max-width: 1800px;
     padding: 0 2.5rem;
     display: flex;
     flex-direction: column;
@@ -109,23 +109,27 @@
   }
 
   .project-item {
-    width: 100%;
-    margin-bottom: 4vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     cursor: pointer;
   }
 
-  .project-item img {
-    width: 100%;
+  .project-item img,
+  .project-item video {
     display: block;
-    transition: opacity 0.2s;
+    margin: 0 auto 1.2rem;
   }
 
-  .project-item:hover img { opacity: 0.82; }
+  .project-item img:last-child,
+  .project-item video:last-child { margin-bottom: 0; }
 
-  .feed-image { width: 100%; }
-  .feed-image img { width: 100%; display: block; }
-  .feed-video { width: 100%; }
-  .feed-video video { width: 100%; display: block; }
+  @media (max-width: 700px) {
+    .project-item img, .project-item video {
+      width: 82vw !important;
+      max-width: 82vw !important;
+    }
+  }
 
   /* ── BOTTOM NAV ── */
   .bottom-nav {
@@ -165,9 +169,9 @@
 
   .project-gallery {
     width: 100%;
-    max-width: 1720px;
+    max-width: 1800px;
     margin: 0 auto;
-    padding: 0 2.5rem;
+    padding: 0 2.5rem 6rem;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -178,38 +182,6 @@
     width: 100%;
     display: block;
     margin-bottom: 1.5rem;
-  }
-
-  /* PROJECT INFO – small, muted, below the images */
-  .project-info {
-    max-width: 600px;
-    margin: 2rem auto 0;
-    padding: 2.5rem 2rem 6rem;
-    text-align: center;
-  }
-
-  .project-info .meta {
-    font-size: 0.65rem;
-    letter-spacing: 0.12rem;
-    color: var(--gray);
-    text-transform: uppercase;
-    margin-bottom: 0.7rem;
-  }
-
-  .project-info h2 {
-    font-size: clamp(1.1rem, 2.8vw, 1.7rem);
-    font-weight: 300;
-    line-height: 1.3;
-    margin-bottom: 1.5rem;
-  }
-
-  .project-info .description {
-    font-size: 0.86rem;
-    line-height: 1.9;
-    color: rgba(0,0,0,0.58);
-    max-width: 480px;
-    margin: 0 auto;
-    text-align: left;
   }
 
   /* ── CV PAGE ── */
@@ -264,11 +236,13 @@
     margin: 2.5rem 0;
   }
 
-  .project-item { position: relative; }
-
   /* fade-in on scroll */
-  .project-item, .feed-image, .feed-video { opacity: 0; transform: translateY(14px); transition: opacity .6s ease, transform .6s ease; }
-  .project-item.in-view, .feed-image.in-view, .feed-video.in-view { opacity: 1; transform: translateY(0); }
+  .project-item, .page .project-gallery img, .page .project-gallery video {
+    opacity: 0; transform: translateY(14px); transition: opacity .6s ease, transform .6s ease;
+  }
+  .project-item.in-view, .page .project-gallery img.in-view, .page .project-gallery video.in-view {
+    opacity: 1; transform: translateY(0);
+  }
 </style>
 </head>
 <body>
@@ -287,42 +261,70 @@
 
   <div class="projects-feed">
 
-    <div class="project-item" onclick="showProject('capella')">
-      <img loading="lazy" alt="Capella — platform for music and community, La Chapelle" src="Capella_main.jpeg"></div>
-    <div style="height:5vh;width:100%"></div>
-
-    <div class="project-item" onclick="showProject('twobarns')">
-      <img loading="lazy" alt="Two Barns — youth housing in the countryside" src="scheine_main.png"></div>
-    <div style="height:5vh;width:100%"></div>
-
-    <div class="project-item" onclick="showProject('roubaix')">
-      <img loading="lazy" alt="ENSA Roubaix — factory transformed into architecture school" src="Roubaix_Main.jpeg"></div>
-    <div style="height:5vh;width:100%"></div>
-
-    <div class="project-item" onclick="showProject('groninger')">
-      <img loading="lazy" alt="Gröninger Hof — parking garage transformed into housing" src="groeninger_main.png"></div>
-    <div style="height:5vh;width:100%"></div>
-
-    <div class="project-item" onclick="showProject('plancomun')">
-      <img loading="lazy" alt="Plan Comùn — Paris, current practice work" src="Pantin_main.jpeg"></div>
-    <div style="height:5vh;width:100%"></div>
-
-    <div class="project-item" onclick="showProject('beten')">
-      <img loading="lazy" alt="Seminary and church near Wittenberg" src="beten_main.png"></div>
-    <div style="height:5vh;width:100%"></div>
-
-    <div class="project-item" onclick="showProject('mosterei')">
-      <img loading="lazy" alt="Cider factory on the Thuringia cycle path" src="mosterei_main.png"></div>
-    <div style="height:5vh;width:100%"></div>
-
-    <div class="feed-video">
-      <video src="vid_main.mp4" autoplay muted loop playsinline></video>
+    <div class="project-item" onclick="showProject('page-project10')">
+      <img src="img/python-2.jpg" alt="" style="width:27.72vw;max-width:499px;" loading="lazy">
     </div>
+    <div style="height:5vh;width:100%"></div>
+
+    <div class="project-item" onclick="showProject('page-pfe')">
+      <img src="img/capella004.jpg" alt="" style="width:23.89vw;max-width:430px;" loading="lazy">
+    </div>
+    <div style="height:5vh;width:100%"></div>
+
+    <div class="project-item" onclick="showProject('page-project11')">
+      <img src="img/chartreuse_gif_01.gif" alt="" style="width:15.28vw;max-width:275px;" loading="lazy">
+    </div>
+    <div style="height:5vh;width:100%"></div>
+
+    <div class="project-item" onclick="showProject('page-project6')">
+      <img src="img/scheune_0.jpg" alt="" style="width:26.78vw;max-width:482px;" loading="lazy">
+    </div>
+    <div style="height:5vh;width:100%"></div>
+
+    <div class="project-item" onclick="showProject('page-project9')">
+      <img src="img/IMG_1359-2.jpg" alt="" style="width:23.89vw;max-width:430px;" loading="lazy">
+    </div>
+    <div style="height:5vh;width:100%"></div>
+
+    <div class="project-item" onclick="showProject('page-project1')">
+      <img src="img/Entwurf_Beten_Perspektiven__02.png" alt="" style="width:29.61vw;max-width:533px;" loading="lazy">
+    </div>
+    <div style="height:5vh;width:100%"></div>
+
+    <div class="project-item" onclick="showProject('page-roubaix')">
+      <img src="img/roubaix-out.jpg" alt="" style="width:29.61vw;max-width:533px;" loading="lazy">
+    </div>
+    <div style="height:5vh;width:100%"></div>
+
+    <div class="project-item" onclick="showProject('page-project9')">
+      <img src="img/gifquick.gif" alt="" style="width:25.78vw;max-width:464px;" loading="lazy">
+    </div>
+    <div style="height:5vh;width:100%"></div>
+
+    <div class="project-item" onclick="showProject('page-project7')">
+      <img src="img/st_24_1.jpeg" alt="" style="width:27.72vw;max-width:499px;" loading="lazy">
+    </div>
+    <div style="height:5vh;width:100%"></div>
+
+    <div class="project-item" onclick="showProject('page-project4')">
+      <img src="img/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben_3.png" alt="" style="width:31.5vw;max-width:567px;" loading="lazy">
+    </div>
+    <div style="height:5vh;width:100%"></div>
+
+    <div class="project-item" onclick="showProject('page-project2')">
+      <img src="img/rendu1.jpeg" alt="" style="width:29.61vw;max-width:533px;" loading="lazy">
+      <img src="img/PerspektiveAu_en_3KM.png" alt="" style="width:44.89vw;max-width:808px;" loading="lazy">
+    </div>
+    <div style="height:5vh;width:100%"></div>
+
+    <div class="project-item" onclick="showProject('page-project8')">
+      <img src="img/Bildschirmfoto-2024-09-11-um-13.34.53.jpeg" alt="" style="width:30.56vw;max-width:550px;" loading="lazy">
+    </div>
+    <div style="height:5vh;width:100%"></div>
 
   </div>
 
   <div class="bottom-nav">
-    <a href="#" onclick="showProject('archive')">Archive</a>
     <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
     <a href="https://aamend.com/pics" target="_blank">Pics</a>
   </div>
@@ -364,77 +366,160 @@
 </div>
 
 <!-- PROJECT PAGES -->
-<!-- Add more images by extending data-images, e.g.: '["img1.jpg","img2.jpg","img3.jpg"]' -->
 
-<div id="project-capella" class="page" data-images='["Capella_main.jpeg"]'>
-  <div class="project-gallery"></div>
-  <div class="project-info">
-    <div class="meta">Master Thesis · ENSA Paris-Belleville · 2025</div>
-    <h2>Capella – A Platform for Music and Community in La Chapelle</h2>
-    <p class="description">Supervised by Julie Lafortune, Etienne Barré and Julie Maillard. In collaboration with Diego Kühle Ramos. Grade: A (with congratulations from the jury).<br><br>The thesis examines rapid densification on public space in disadvantaged neighbourhoods. An infrastructural element that weaves the new neighbourhood into the existing urban fabric and creates a place for making and experiencing music.</p>
+<div id="page-project10" class="page">
+  <div class="project-gallery">
+    <img src="img/paython-drawing-2.jpg" alt="" loading="lazy">
+    <img src="img/paythd2.jpg" alt="" loading="lazy">
+    <img src="img/pyth3.png" alt="" loading="lazy">
   </div>
 </div>
 
-<div id="project-twobarns" class="page" data-images='["scheine_main.png"]'>
-  <div class="project-gallery"></div>
-  <div class="project-info">
-    <div class="meta">Bachelor Thesis · Bauhaus Universität Weimar · 2022 · Grade 1,7</div>
-    <h2>Two Barns – Youth Housing in the Countryside</h2>
-    <p class="description">Supervised by Prof. Verena von Beckerath and Till Hoffmann.<br><br>Two barns opposite each other were transformed: one for living with shared kitchens on two floors, one dedicated to concentrated work, usable as studio, home office, or event space.</p>
+<div id="page-pfe" class="page">
+  <div class="project-gallery">
+    <img src="img/capella004.jpg" alt="" loading="lazy">
+    <img src="img/capella005.jpg" alt="" loading="lazy">
+    <img src="img/palimsest_nolli.jpg" alt="" loading="lazy">
+    <img src="img/axes_dB_Map.jpg" alt="" loading="lazy">
+    <img src="img/capella003.jpg" alt="" loading="lazy">
+    <img src="img/capella002.jpg" alt="" loading="lazy">
+    <img src="img/0016.jpg" alt="" loading="lazy">
+    <img src="img/capella001.jpg" alt="" loading="lazy">
+    <img src="img/0020.jpg" alt="" loading="lazy">
+    <img src="img/Modell_1_100.jpg" alt="" loading="lazy">
+    <img src="img/IMG_51.jpg" alt="" loading="lazy">
+    <img src="img/0017.jpg" alt="" loading="lazy">
+    <img src="img/0013.jpg" alt="" loading="lazy">
+    <img src="img/0002.jpg" alt="" loading="lazy">
+    <img src="img/0007.jpg" alt="" loading="lazy">
   </div>
 </div>
 
-<div id="project-roubaix" class="page" data-images='["Roubaix_Main.jpeg"]'>
-  <div class="project-gallery"></div>
-  <div class="project-info">
-    <div class="meta">Semester Project · ENSA Paris-Belleville · 2023 · Grade A</div>
-    <h2>ENSA Roubaix – Transformation of a Former Factory into an Architecture School</h2>
-    <p class="description">Supervised by Prof. Louis Burriel. With Diego Kühle Ramos.<br><br>Developing a consistent system of tools and parameters to organize interventions and evaluate their consequences on the former Roubaix factory.</p>
+<div id="page-project11" class="page">
+  <div class="project-gallery">
+    <img src="img/abbruch.jpg" alt="" loading="lazy">
+    <img src="img/done.jpg" alt="" loading="lazy">
+    <img src="img/Axo2.png" alt="" loading="lazy">
+    <img src="img/Axo1.png" alt="" loading="lazy">
+    <img src="img/section.jpg" alt="" loading="lazy">
+    <img src="img/Chartreuse-3-pics.jpg" alt="" loading="lazy">
   </div>
 </div>
 
-<div id="project-groninger" class="page" data-images='["groeninger_main.png"]'>
-  <div class="project-gallery"></div>
-  <div class="project-info">
-    <div class="meta">Semester Project · Bauhaus Universität Weimar · 2022 · Grade A</div>
-    <h2>Gröninger Hof – Cooperative Transformation of a Parking Garage into Housing</h2>
-    <p class="description">Supervised by Prof. Verena von Beckerath. With Charlotte Henschel and Vincent Mank.<br><br>Reusing the existing structure of a Hamburg parking garage to generate new cooperative living space with three apartment typologies and hybrid office/communal areas.</p>
+<div id="page-project6" class="page">
+  <div class="project-gallery">
+    <img src="img/Endprasentation_verschoben_3.png" alt="" loading="lazy">
+    <img src="img/Endprasentation_verschoben_7.png" alt="" loading="lazy">
+    <img src="img/Endprasentation_verschoben_4.png" alt="" loading="lazy">
+    <img src="img/Endprasentation_verschoben_6.png" alt="" loading="lazy">
+    <img src="img/Endprasentation_verschoben.png" alt="" loading="lazy">
+    <img src="img/Endprasentation_verschoben_2.png" alt="" loading="lazy">
+    <img src="img/Endprasentation_verschoben_5.png" alt="" loading="lazy">
   </div>
 </div>
 
-<div id="project-plancomun" class="page" data-images='["Pantin_main.jpeg"]'>
-  <div class="project-gallery"></div>
-  <div class="project-info">
-    <div class="meta">Plan Comùn Architects · Paris · 2025–26</div>
-    <h2>Plan Comùn – Paris</h2>
-    <p class="description">Competition work including Python (rehabilitation of 3 residential towers on the eastern Périphérique in collaboration with NP2F), Hebert Lot C, Pantin St. Denis 2, and a full apartment renovation for a retiring couple in Paris 10ème.</p>
+<div id="page-project9" class="page">
+  <div class="project-gallery">
+    <img src="img/gifquick.gif" alt="" loading="lazy">
+    <img src="img/martel2.png" alt="" loading="lazy">
+    <img src="img/martel1.png" alt="" loading="lazy">
+    <img src="img/martel.png" alt="" loading="lazy">
+    <img src="img/pic.jpg" alt="" loading="lazy">
+    <img src="img/pic3.jpg" alt="" loading="lazy">
   </div>
 </div>
 
-<div id="project-beten" class="page" data-images='["beten_main.png"]'>
-  <div class="project-gallery"></div>
-  <div class="project-info">
-    <div class="meta">Semester Project · Bauhaus Universität Weimar</div>
-    <h2>Seminary and Church for Educational Purposes in the Forest near Wittenberg</h2>
-    <p class="description">A seminary and church complex embedded in the landscape of the forest near Wittenberg. The project explores the relationship between sacred space, education, and nature.</p>
+<div id="page-project1" class="page">
+  <div class="project-gallery">
+    <img src="img/Entwurf_Beten_Perspektiven__02.png" alt="" loading="lazy">
+    <img src="img/Beten_Ansicht_Materialitat_01.png" alt="" loading="lazy">
+    <img src="img/konzept_kirche.png" alt="" loading="lazy">
+    <img src="img/Beten_Grundriss_1-50_01.png" alt="" loading="lazy">
   </div>
 </div>
 
-<div id="project-mosterei" class="page" data-images='["mosterei_main.png"]'>
-  <div class="project-gallery"></div>
-  <div class="project-info">
-    <div class="meta">Semester Project · Bauhaus Universität Weimar</div>
-    <h2>Cider Factory on the Thuringia Cycle Path</h2>
-    <p class="description">A cider press and production facility sited along the Thuringia cycle path, connecting agricultural landscape with passing cyclists and visitors.</p>
+<div id="page-roubaix" class="page">
+  <div class="project-gallery">
+    <img src="img/solutions1.jpg" alt="" loading="lazy">
+    <img src="img/roubaix-mensa.jpg" alt="" loading="lazy">
+    <img src="img/roubaix-out.jpg" alt="" loading="lazy">
+    <img src="img/rubaix-atrium.jpg" alt="" loading="lazy">
+    <img src="img/roubaix-studio.jpg" alt="" loading="lazy">
+    <img src="img/A3_compressed_page-0004.jpg" alt="" loading="lazy">
+    <img src="img/A3_compressed_page-0003.jpg" alt="" loading="lazy">
+    <img src="img/4.jpeg" alt="" loading="lazy">
+    <img src="img/A3_compressed_page-0001.jpg" alt="" loading="lazy">
+    <img src="img/A3_compressed_page-0002.jpg" alt="" loading="lazy">
+    <img src="img/3.jpeg" alt="" loading="lazy">
+    <img src="img/2.jpeg" alt="" loading="lazy">
+    <img src="img/A3_compressed_page-0005.jpg" alt="" loading="lazy">
+    <img src="img/A3_compressed_page-0006.jpg" alt="" loading="lazy">
+    <img src="img/5.jpeg" alt="" loading="lazy">
+    <img src="img/7.jpeg" alt="" loading="lazy">
+    <img src="img/A3_compressed_page-0007.jpg" alt="" loading="lazy">
+    <img src="img/A3_compressed_page-0008.jpg" alt="" loading="lazy">
+    <img src="img/A3_compressed_page-0012.jpg" alt="" loading="lazy">
+    <img src="img/A3_compressed_page-0011.jpg" alt="" loading="lazy">
+    <img src="img/A3_compressed_page-0010.jpg" alt="" loading="lazy">
+    <img src="img/A3_compressed_page-0009.jpg" alt="" loading="lazy">
   </div>
 </div>
 
-<div id="project-archive" class="page" data-images='["ndba_main.jpeg","tokyobkk_main.jpeg"]'>
-  <div class="project-gallery"></div>
-  <div class="project-info">
-    <div class="meta">Archive · Internships & Competition Work</div>
-    <h2>Archive</h2>
-    <p class="description">Selected work from internships at Nicolas Dorval-Bory Architects (Paris), Bangkok Tokyo Architects (Bangkok), tiburg Architekten (Vienna) — and competition entries.</p>
+<div id="page-project7" class="page">
+  <div class="project-gallery">
+    <img src="img/st_24_6.jpeg" alt="" loading="lazy">
+    <img src="img/st_24_3.jpeg" alt="" loading="lazy">
+    <img src="img/st_24_2.jpeg" alt="" loading="lazy">
+    <img src="img/333.jpeg" alt="" loading="lazy">
+    <img src="img/st_24_5.jpeg" alt="" loading="lazy">
+    <img src="img/3334.png" alt="" loading="lazy">
+    <img src="img/st_24_1.jpeg" alt="" loading="lazy">
+    <img src="img/st_24_7.jpeg" alt="" loading="lazy">
+    <img src="img/st_24_4.jpeg" alt="" loading="lazy">
+  </div>
+</div>
+
+<div id="page-project4" class="page">
+  <div class="project-gallery">
+    <img src="img/Bildschirmfoto-2022-11-25-um-15.21.33-Kopie.jpg" alt="" loading="lazy">
+    <img src="img/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben_3.png" alt="" loading="lazy">
+    <img src="img/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben_5.png" alt="" loading="lazy">
+    <img src="img/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben_4.png" alt="" loading="lazy">
+    <img src="img/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben_6.png" alt="" loading="lazy">
+    <img src="img/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben.png" alt="" loading="lazy">
+    <img src="img/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben_2.png" alt="" loading="lazy">
+    <img src="img/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben_81.png" alt="" loading="lazy">
+    <img src="img/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben_9.png" alt="" loading="lazy">
+    <img src="img/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben_8.png" alt="" loading="lazy">
+    <img src="img/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben_7.png" alt="" loading="lazy">
+  </div>
+</div>
+
+<div id="page-project2" class="page">
+  <div class="project-gallery">
+    <img src="img/portfolio_aaron_amend_verschoben.png" alt="" loading="lazy">
+    <img src="img/PerspektiveAu_en_3KM.png" alt="" loading="lazy">
+    <img src="img/Bildschirmfoto-2022-12-05-um-13.28.33.png" alt="" loading="lazy">
+    <img src="img/faltung.png" alt="" loading="lazy">
+    <img src="img/grundrissclean.png" alt="" loading="lazy">
+    <img src="img/fassadenschnitt.png" alt="" loading="lazy">
+    <img src="img/Explo_Iso_200_Final_3KM.png" alt="" loading="lazy">
+  </div>
+</div>
+
+<div id="page-project8" class="page">
+  <div class="project-gallery">
+    <img src="img/Bildschirmfoto-2024-09-11-um-13.34.22.jpeg" alt="" loading="lazy">
+    <img src="img/Bildschirmfoto-2024-09-11-um-13.33.53.jpeg" alt="" loading="lazy">
+    <img src="img/Bildschirmfoto-2024-09-11-um-13.35.34.jpeg" alt="" loading="lazy">
+    <img src="img/Bildschirmfoto-2024-09-11-um-13.35.29.jpeg" alt="" loading="lazy">
+    <img src="img/Bildschirmfoto-2024-09-11-um-13.37.30.jpeg" alt="" loading="lazy">
+    <img src="img/Bildschirmfoto-2024-09-11-um-13.35.39.jpeg" alt="" loading="lazy">
+    <img src="img/Bildschirmfoto-2024-09-11-um-13.35.16.jpeg" alt="" loading="lazy">
+    <img src="img/Bildschirmfoto-2024-09-11-um-13.35.01.jpeg" alt="" loading="lazy">
+    <img src="img/Bildschirmfoto-2024-09-11-um-13.34.53.jpeg" alt="" loading="lazy">
+    <img src="img/Bildschirmfoto-2024-09-11-um-13.34.41.jpeg" alt="" loading="lazy">
+    <img src="img/Bildschirmfoto-2024-09-11-um-13.34.31.jpeg" alt="" loading="lazy">
   </div>
 </div>
 
@@ -445,19 +530,6 @@
   const navCV   = document.getElementById('nav-cv');
   const arrow   = document.getElementById('scroll-arrow');
   let currentPage = 'home';
-
-  /* ── Gallery: full-width stacked images (matches Cargo project pages) ── */
-  function renderGallery(page) {
-    const images  = JSON.parse(page.dataset.images || '[]');
-    const gallery = page.querySelector('.project-gallery');
-    if (!gallery || gallery.childElementCount) return; // render once
-    gallery.innerHTML = images.map(src => {
-      const isVideo = /\.(mp4|webm|mov)$/i.test(src);
-      return isVideo
-        ? `<video src="${src}" autoplay muted loop playsinline></video>`
-        : `<img src="${src}" alt="">`;
-    }).join('');
-  }
 
   /* ── Navigation ── */
   function showHome() { home.style.display = 'flex'; }
@@ -478,15 +550,15 @@
     hideHome();
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     cvPage.classList.remove('active');
-    const page = document.getElementById('project-' + id);
+    const page = document.getElementById(id);
     if (page) {
       page.classList.add('active');
       navBack.style.display = 'block';
-      navCV.style.display   = 'block'; /* + stays visible on project pages */
+      navCV.style.display   = 'block';
       window.scrollTo(0, 0);
       currentPage = id;
       arrow.style.display = 'none';
-      renderGallery(page);
+      page.querySelectorAll('img, video').forEach(el => io.observe(el));
     }
   }
 
@@ -511,8 +583,8 @@
   /* ── Fade-in on scroll ── */
   const io = new IntersectionObserver((entries) => {
     entries.forEach(en => { if (en.isIntersecting) { en.target.classList.add('in-view'); io.unobserve(en.target); } });
-  }, { threshold: 0.15 });
-  document.querySelectorAll('.project-item, .feed-image, .feed-video').forEach(el => io.observe(el));
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.project-item').forEach(el => io.observe(el));
 </script>
 </body>
 </html>
