@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>aamend.com — Admin</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+    background: #f4f4f2;
+    color: #1a1a1a;
+  }
+  header {
+    position: sticky; top: 0; z-index: 50;
+    background: #111; color: #fff;
+    padding: 1rem 1.5rem;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 1rem;
+  }
+  header h1 { font-size: 1.1rem; font-weight: 600; margin: 0; }
+  header .sub { font-size: 0.8rem; color: rgba(255,255,255,0.55); }
+  #publish-btn {
+    background: #fff; color: #111; border: none; border-radius: 6px;
+    padding: 0.6rem 1.2rem; font-size: 0.9rem; font-weight: 600; cursor: pointer;
+  }
+  #publish-btn:disabled { opacity: 0.5; cursor: default; }
+  #publish-status { font-size: 0.8rem; color: #9fdb9f; min-width: 200px; text-align: right; }
+  #publish-status.error { color: #ff9a9a; }
+  main { max-width: 1100px; margin: 0 auto; padding: 1.5rem; }
+  section { margin-bottom: 3rem; }
+  section h2 { font-size: 1rem; font-weight: 600; margin-bottom: 0.25rem; }
+  section .hint { font-size: 0.8rem; color: #888; margin-bottom: 1rem; }
+  .grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.75rem;
+  }
+  .thumb {
+    position: relative; border-radius: 8px; overflow: hidden; background: #ddd;
+    aspect-ratio: 1/1; cursor: pointer; border: 2px solid transparent;
+  }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .thumb .path {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: rgba(0,0,0,0.6); color: #fff; font-size: 0.62rem;
+    padding: 0.2rem 0.35rem; word-break: break-all;
+  }
+  .thumb .overlay {
+    position: absolute; inset: 0; background: rgba(0,0,0,0.45);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity 0.15s; color: #fff; font-size: 0.75rem; font-weight: 600;
+  }
+  .thumb:hover .overlay { opacity: 1; }
+  .thumb.uploading .overlay { opacity: 1; background: rgba(0,0,0,0.65); }
+  .thumb.dragging { opacity: 0.35; }
+  .thumb .del-btn {
+    position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; border-radius: 50%;
+    background: rgba(0,0,0,0.65); color: #fff; border: none; font-size: 0.8rem; cursor: pointer;
+    display: none; align-items: center; justify-content: center; line-height: 1;
+  }
+  .thumb:hover .del-btn { display: flex; }
+  .add-thumb {
+    aspect-ratio: 1/1; border-radius: 8px; border: 2px dashed #bbb; background: #eee;
+    display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: #999;
+    cursor: pointer;
+  }
+  .add-thumb:hover { background: #e4e4e4; }
+  .project-card {
+    background: #fff; border-radius: 10px; padding: 1rem 1.25rem 1.25rem; margin-bottom: 1.25rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .project-card h3 { font-size: 0.85rem; font-weight: 700; margin: 0 0 0.75rem; color: #444; }
+  .meta-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-top: 0.9rem; }
+  .meta-fields textarea {
+    width: 100%; min-height: 70px; font-family: inherit; font-size: 0.78rem;
+    border: 1px solid #ddd; border-radius: 6px; padding: 0.5rem; resize: vertical;
+  }
+  .meta-fields button {
+    grid-column: 1 / -1; justify-self: start; font-size: 0.75rem; padding: 0.4rem 0.9rem;
+    border-radius: 6px; border: 1px solid #ccc; background: #f7f7f7; cursor: pointer;
+  }
+  input[type=file] { display: none; }
+  #toast {
+    position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
+    background: #111; color: #fff; padding: 0.6rem 1.2rem; border-radius: 8px;
+    font-size: 0.85rem; opacity: 0; pointer-events: none; transition: opacity 0.2s;
+  }
+  #toast.show { opacity: 1; }
+  #loading { padding: 3rem; text-align: center; color: #999; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>aamend.com — Bilder verwalten</h1>
+    <div class="sub">Klick auf ein Bild = ersetzen · Ziehen = Reihenfolge ändern · rotes × = löschen</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:0.75rem;">
+    <span id="publish-status"></span>
+    <button id="publish-btn">Veröffentlichen</button>
+  </div>
+</header>
+
+<main>
+  <div id="loading">Lädt…</div>
+  <section id="home-section" style="display:none">
+    <h2>Startseite — Vorschaubilder</h2>
+    <div class="hint">Diese Bilder erscheinen im Feed auf der Startseite. Klicken zum Ersetzen.</div>
+    <div class="grid" id="home-grid"></div>
+  </section>
+  <section id="projects-section" style="display:none">
+    <h2>Projekte</h2>
+    <div class="hint">Jedes Projekt hat seine eigene Bilderstrecke (Slideshow) und optional einen Beschreibungstext.</div>
+    <div id="projects-list"></div>
+  </section>
+</main>
+
+<div id="toast"></div>
+
+<script>
+let DATA = null;
+
+function toast(msg, isError) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show' + (isError ? ' error' : '');
+  setTimeout(() => { t.className = ''; }, 3000);
+}
+
+async function load() {
+  const res = await fetch('/api/projects');
+  DATA = await res.json();
+  render();
+}
+
+function render() {
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('home-section').style.display = '';
+  document.getElementById('projects-section').style.display = '';
+  renderHome();
+  renderProjects();
+}
+
+function renderHome() {
+  const grid = document.getElementById('home-grid');
+  grid.innerHTML = '';
+  DATA.home.forEach(item => {
+    const el = document.createElement('div');
+    el.className = 'thumb';
+    el.innerHTML = `<img src="/${item.src}?t=${Date.now()}" loading="lazy">
+      <div class="path">${item.src}</div>
+      <div class="overlay">Ersetzen</div>`;
+    el.addEventListener('click', () => pickAndReplace(item.src, el));
+    grid.appendChild(el);
+  });
+}
+
+function renderProjects() {
+  const list = document.getElementById('projects-list');
+  list.innerHTML = '';
+  DATA.projects.forEach(project => {
+    const card = document.createElement('div');
+    card.className = 'project-card';
+    card.innerHTML = `<h3>${project.id.replace(/^page-/, '')}</h3>
+      <div class="grid" data-page="${project.id}"></div>`;
+    list.appendChild(card);
+
+    const grid = card.querySelector('.grid');
+    project.images.forEach(src => grid.appendChild(makeSlideThumb(project.id, src)));
+    const addEl = document.createElement('div');
+    addEl.className = 'add-thumb';
+    addEl.textContent = '+';
+    addEl.title = 'Neues Bild hinzufügen';
+    addEl.addEventListener('click', () => pickAndAdd(project.id, addEl));
+    grid.appendChild(addEl);
+
+    enableDragReorder(grid, project.id);
+
+    if (project.meta) {
+      const fields = document.createElement('div');
+      fields.className = 'meta-fields';
+      fields.innerHTML = `
+        <textarea data-col="1" placeholder="Spalte 1 (z.B. Auftraggeber)">${project.meta.col1}</textarea>
+        <textarea data-col="2" placeholder="Spalte 2 (z.B. Beschreibung)">${project.meta.col2}</textarea>
+        <button>Text speichern</button>`;
+      fields.querySelector('button').addEventListener('click', async () => {
+        const col1 = fields.querySelector('[data-col="1"]').value;
+        const col2 = fields.querySelector('[data-col="2"]').value;
+        const r = await fetch('/api/update-meta', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pageId: project.id, col1, col2 })
+        });
+        if (r.ok) toast('Text gespeichert.'); else toast('Fehler beim Speichern.', true);
+      });
+      card.appendChild(fields);
+    }
+  });
+}
+
+function makeSlideThumb(pageId, src) {
+  const el = document.createElement('div');
+  el.className = 'thumb';
+  el.draggable = true;
+  el.dataset.src = src;
+  el.innerHTML = `<img src="/${src}?t=${Date.now()}" loading="lazy">
+    <div class="path">${src.split('/').pop()}</div>
+    <div class="overlay">Ersetzen</div>
+    <button class="del-btn" title="Löschen">×</button>`;
+  el.querySelector('img').addEventListener('click', (e) => { e.stopPropagation(); pickAndReplace(src, el); });
+  el.querySelector('.overlay').addEventListener('click', (e) => { e.stopPropagation(); pickAndReplace(src, el); });
+  el.querySelector('.del-btn').addEventListener('click', async (e) => {
+    e.stopPropagation();
+    if (!confirm('Dieses Bild aus der Slideshow entfernen?')) return;
+    const r = await fetch('/api/delete-image', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pageId, src })
+    });
+    if (r.ok) { toast('Bild entfernt.'); load(); } else toast('Fehler beim Entfernen.', true);
+  });
+  return el;
+}
+
+function pickAndReplace(relSrc, el) {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.onchange = async () => {
+    if (!input.files[0]) return;
+    el.classList.add('uploading');
+    const fd = new FormData();
+    fd.append('path', relSrc);
+    fd.append('image', input.files[0]);
+    try {
+      const r = await fetch('/api/replace-image', { method: 'POST', body: fd });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || 'Fehler');
+      const img = el.querySelector('img');
+      img.src = `/${relSrc}?t=${Date.now()}`;
+      toast('Bild ersetzt und automatisch optimiert.');
+    } catch (e) {
+      toast('Fehler: ' + e.message, true);
+    } finally {
+      el.classList.remove('uploading');
+    }
+  };
+  input.click();
+}
+
+function pickAndAdd(pageId, el) {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.onchange = async () => {
+    if (!input.files[0]) return;
+    const fd = new FormData();
+    fd.append('pageId', pageId);
+    fd.append('image', input.files[0]);
+    try {
+      const r = await fetch('/api/add-image', { method: 'POST', body: fd });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || 'Fehler');
+      toast('Bild hinzugefügt.');
+      load();
+    } catch (e) {
+      toast('Fehler: ' + e.message, true);
+    }
+  };
+  input.click();
+}
+
+function enableDragReorder(grid, pageId) {
+  let dragEl = null;
+  grid.addEventListener('dragstart', (e) => {
+    if (!e.target.closest('.thumb') || !e.target.closest('.thumb').dataset.src) return;
+    dragEl = e.target.closest('.thumb');
+    dragEl.classList.add('dragging');
+  });
+  grid.addEventListener('dragend', async () => {
+    if (!dragEl) return;
+    dragEl.classList.remove('dragging');
+    dragEl = null;
+    const order = [...grid.querySelectorAll('.thumb')].map(t => t.dataset.src).filter(Boolean);
+    const r = await fetch('/api/reorder-images', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pageId, order })
+    });
+    if (r.ok) toast('Reihenfolge gespeichert.'); else toast('Fehler beim Speichern der Reihenfolge.', true);
+  });
+  grid.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    const after = getDragAfterElement(grid, e.clientX, e.clientY);
+    const dragging = grid.querySelector('.dragging');
+    if (!dragging) return;
+    const addBtn = grid.querySelector('.add-thumb');
+    if (after == null) {
+      grid.insertBefore(dragging, addBtn);
+    } else {
+      grid.insertBefore(dragging, after);
+    }
+  });
+}
+
+function getDragAfterElement(grid, x, y) {
+  const els = [...grid.querySelectorAll('.thumb:not(.dragging)')];
+  let closest = { offset: -Infinity, element: null };
+  for (const el of els) {
+    const box = el.getBoundingClientRect();
+    const offsetY = y - box.top - box.height / 2;
+    const offsetX = x - box.left - box.width / 2;
+    const offset = Math.abs(offsetY) < box.height ? offsetX - box.width * 5 : -Infinity;
+    if (offset < 0 && offset > closest.offset) closest = { offset, element: el };
+  }
+  return closest.element;
+}
+
+document.getElementById('publish-btn').addEventListener('click', async () => {
+  const btn = document.getElementById('publish-btn');
+  const status = document.getElementById('publish-status');
+  btn.disabled = true;
+  status.className = '';
+  status.textContent = 'Veröffentliche…';
+  try {
+    const r = await fetch('/api/publish', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) });
+    const j = await r.json();
+    if (!r.ok || !j.ok) throw new Error(j.error || 'Fehler');
+    status.textContent = j.message;
+  } catch (e) {
+    status.className = 'error';
+    status.textContent = 'Fehler: ' + e.message;
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+load();
+</script>
+</body>
+</html>
