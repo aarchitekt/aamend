@@ -191,11 +191,20 @@
   #globe-canvas-wrap {
     width: 100%;
     height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: grab;
     touch-action: none;
   }
   #globe-canvas-wrap:active { cursor: grabbing; }
-  #globe-canvas-wrap canvas { display: block; }
+  #globe-svg {
+    width: min(88vw, 88vh);
+    height: min(88vw, 88vh);
+    display: block;
+  }
+  #globe-svg .globe-dot { fill: #f2f2f2; }
+  #globe-svg .globe-marker { cursor: pointer; }
 
   #pics-lightbox {
     display: none;
@@ -760,7 +769,12 @@
 </div>
 
 <div id="page-globe" class="page">
-  <div id="globe-canvas-wrap"></div>
+  <div id="globe-canvas-wrap">
+    <svg id="globe-svg" viewBox="0 0 340 340" preserveAspectRatio="xMidYMid meet">
+      <g id="globe-dots-layer"></g>
+      <g id="globe-markers-layer"></g>
+    </svg>
+  </div>
   <div class="bottom-nav">
     <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
     <div class="footer-arrow">↓</div>
@@ -773,7 +787,8 @@
   <img id="pics-lightbox-img" src="" alt="">
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="assets/topojson-client.min.js"></script>
 <script>
   const home    = document.getElementById('home');
   const cvPage  = document.getElementById('cv-page');
@@ -861,200 +876,261 @@
   });
 
   /* ── Globe (Pics) ── */
+  /* ── Globe (Pics): fixed screen-space dot raster, like a status-light
+     wall -- land dots never move, rotation only toggles which ones are
+     currently over land (via an orthographic projection + a rasterised
+     land/water lookup). Photo markers are projected for real and snapped
+     onto the nearest raster dot so they read as part of the same grid. ── */
   let globeInited = false;
-  let globeRenderer, globeScene, globeCamera, globeMesh;
+  let globeSvgEl, globeDotsLayer, globeMarkersLayer, globeWrapEl;
+  const GLOBE_SIZE = 340;
+  const GLOBE_GRID_STEP = 5.2;
+  const GLOBE_DOT_R = 2.1;
+  const GLOBE_MIN_VB = GLOBE_SIZE / 14;
+  const GLOBE_MAX_VB = GLOBE_SIZE * 1.15;
+  let globeViewBox = { x: 0, y: 0, w: GLOBE_SIZE, h: GLOBE_SIZE };
+  let globeRotation = [10, -12];
+  let globeLandMask = null;
+  let globeGridPts = null;
+  let globeDotEls = null;
+  let globeGridIndex = null;
+  let globeGridBuiltForScale = 1;
+  let globeMarkerData = [];
+
   function initGlobe() {
-    const wrap = document.getElementById('globe-canvas-wrap');
-    if (!globeInited) {
-      globeInited = true;
-      globeScene = new THREE.Scene();
-      globeCamera = new THREE.PerspectiveCamera(45, wrap.clientWidth / wrap.clientHeight, 0.1, 100);
-      globeCamera.position.z = 2.6;
+    globeWrapEl = document.getElementById('globe-canvas-wrap');
+    if (globeInited) return;
+    globeInited = true;
+    globeSvgEl = document.getElementById('globe-svg');
+    globeDotsLayer = document.getElementById('globe-dots-layer');
+    globeMarkersLayer = document.getElementById('globe-markers-layer');
+    applyGlobeVB();
 
-      globeRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-      globeRenderer.setPixelRatio(window.devicePixelRatio);
-      wrap.appendChild(globeRenderer.domElement);
+    Promise.all([
+      fetch('assets/land-110m.json').then(r => r.json()),
+      fetch('assets/pics.json').then(r => r.json())
+    ]).then(([topo, pics]) => {
+      const land = window.topojson.feature(topo, topo.objects.land);
+      buildLandMask(land);
+      createMarkerEls(pics);
+      rebuildGlobeGrid();
+      drawGlobe();
+      wireGlobeInteraction();
+    });
+  }
 
-      /* dark solid sphere (matches the Reflect/Memori dot-matrix globe look) */
-      const geo = new THREE.SphereGeometry(0.995, 64, 64);
-      const mat = new THREE.MeshBasicMaterial({ color: 0x0a0a0a });
-      globeMesh = new THREE.Mesh(geo, mat);
-      globeScene.add(globeMesh);
+  function applyGlobeVB() {
+    globeSvgEl.setAttribute('viewBox',
+      globeViewBox.x.toFixed(2) + ' ' + globeViewBox.y.toFixed(2) + ' ' +
+      globeViewBox.w.toFixed(2) + ' ' + globeViewBox.h.toFixed(2));
+  }
 
-      /* soft round dot sprite, drawn once on a canvas */
-      const dotCanvas = document.createElement('canvas');
-      dotCanvas.width = dotCanvas.height = 32;
-      const dctx = dotCanvas.getContext('2d');
-      const grad = dctx.createRadialGradient(16, 16, 0, 16, 16, 16);
-      grad.addColorStop(0, 'rgba(255,255,255,1)');
-      grad.addColorStop(0.7, 'rgba(255,255,255,0.9)');
-      grad.addColorStop(1, 'rgba(255,255,255,0)');
-      dctx.fillStyle = grad;
-      dctx.fillRect(0, 0, 32, 32);
-      const dotTex = new THREE.CanvasTexture(dotCanvas);
+  function buildLandMask(landFeature) {
+    const W = 360, H = 180;
+    const canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext('2d');
+    const proj = d3.geoEquirectangular().translate([W / 2, H / 2]).scale(W / (2 * Math.PI));
+    const path = d3.geoPath(proj, ctx);
+    ctx.fillStyle = '#000';
+    ctx.beginPath();
+    path(landFeature);
+    ctx.fill();
+    const px = ctx.getImageData(0, 0, W, H).data;
+    globeLandMask = new Uint8Array(W * H);
+    for (let i = 0; i < W * H; i++) globeLandMask[i] = px[i * 4 + 3] > 128 ? 1 : 0;
+  }
 
-      /* continents rendered as a field of small dots, like the Memori globe */
-      fetch('assets/land-dots.json').then(r => r.json()).then(land => {
-        const posArr = new Float32Array(land.length * 3);
-        land.forEach(([lat, lon], i) => {
-          const p = latLonToVector3(lat, lon, 1);
-          posArr[i * 3] = p.x;
-          posArr[i * 3 + 1] = p.y;
-          posArr[i * 3 + 2] = p.z;
-        });
-        const dotGeo = new THREE.BufferGeometry();
-        dotGeo.setAttribute('position', new THREE.BufferAttribute(posArr, 3));
-        const dotMat = new THREE.PointsMaterial({
-          size: 0.017,
-          map: dotTex,
-          transparent: true,
-          depthWrite: false,
-          sizeAttenuation: true,
-          color: 0xffffff,
-          opacity: 0.85
-        });
-        const dotField = new THREE.Points(dotGeo, dotMat);
-        globeMesh.add(dotField);
-      });
+  function isLand(lon, lat) {
+    if (!globeLandMask) return false;
+    let xi = Math.floor(lon + 180); xi = ((xi % 360) + 360) % 360;
+    const yi = Math.max(0, Math.min(179, Math.floor(90 - lat)));
+    return globeLandMask[yi * 360 + xi] === 1;
+  }
 
-      /* lat/lon -> point on unit sphere (standard equirectangular mapping) */
-      function latLonToVector3(lat, lon, radius) {
-        const phi = (90 - lat) * (Math.PI / 180);
-        const theta = (lon + 180) * (Math.PI / 180);
-        return new THREE.Vector3(
-          -radius * Math.sin(phi) * Math.cos(theta),
-           radius * Math.cos(phi),
-           radius * Math.sin(phi) * Math.sin(theta)
-        );
+  function globeProjection() {
+    return d3.geoOrthographic()
+      .scale(GLOBE_SIZE / 2 - 6)
+      .translate([GLOBE_SIZE / 2, GLOBE_SIZE / 2])
+      .rotate(globeRotation)
+      .clipAngle(90);
+  }
+
+  function rebuildGlobeGrid() {
+    const zoomScale = globeViewBox.w / GLOBE_SIZE;
+    globeGridBuiltForScale = zoomScale;
+    const step = GLOBE_GRID_STEP * zoomScale;
+    const r = GLOBE_DOT_R * zoomScale;
+    const cx = GLOBE_SIZE / 2, cy = GLOBE_SIZE / 2, radius = GLOBE_SIZE / 2 - 6;
+    const pad = step * 2;
+    const left = Math.max(cx - radius, globeViewBox.x - pad);
+    const right = Math.min(cx + radius, globeViewBox.x + globeViewBox.w + pad);
+    const top = Math.max(cy - radius, globeViewBox.y - pad);
+    const bottom = Math.min(cy + radius, globeViewBox.y + globeViewBox.h + pad);
+    const pts = [];
+    for (let y = top; y <= bottom; y += step) {
+      for (let x = left; x <= right; x += step) {
+        if ((x - cx) * (x - cx) + (y - cy) * (y - cy) <= radius * radius) pts.push([x, y]);
       }
-
-      /* photo markers: real GPS location where known (from EXIF), grouped into
-         small grid clusters when several photos share a location; photos
-         without GPS data fall back to an even Fibonacci-sphere spread. */
-      const markers = [];
-      const BASE_SCALE = 0.016;
-      const CLUSTER_SPACING = 0.045;
-      fetch('assets/pics.json').then(r => r.json()).then(items => {
-        const loader = new THREE.TextureLoader();
-        items.forEach(it => {
-          let base;
-          if (it.lat !== null && it.lat !== undefined) {
-            base = latLonToVector3(it.lat, it.lon, 1);
-            const up = new THREE.Vector3(0, 1, 0);
-            let east = new THREE.Vector3().crossVectors(up, base);
-            if (east.lengthSq() < 1e-6) east.set(1, 0, 0); else east.normalize();
-            const north = new THREE.Vector3().crossVectors(base, east).normalize();
-            base.addScaledVector(east, (it.ox || 0) * CLUSTER_SPACING);
-            base.addScaledVector(north, (it.oy || 0) * CLUSTER_SPACING);
-            base.normalize();
-          } else {
-            base = new THREE.Vector3(it.gx, it.gy, it.gz).normalize();
-          }
-          const ptex = loader.load('img/pics-thumb/' + encodeURIComponent(it.thumb));
-          const pmat = new THREE.SpriteMaterial({ map: ptex, transparent: true });
-          const sprite = new THREE.Sprite(pmat);
-          sprite.position.copy(base).multiplyScalar(1.045);
-          sprite.scale.set(BASE_SCALE, BASE_SCALE, 1);
-          sprite.userData.full = it.full;
-          globeMesh.add(sprite);
-          markers.push(sprite);
-        });
-      });
-
-      const raycaster = new THREE.Raycaster();
-      function globeClickAt(clientX, clientY) {
-        const rect = wrap.getBoundingClientRect();
-        const mouse = new THREE.Vector2(
-          ((clientX - rect.left) / rect.width) * 2 - 1,
-          -((clientY - rect.top) / rect.height) * 2 + 1
-        );
-        raycaster.setFromCamera(mouse, globeCamera);
-        const hits = raycaster.intersectObjects(markers);
-        if (hits.length) openPicsLightbox(hits[0].object.userData.full);
-      }
-
-      let dragging = false, lastX = 0, lastY = 0, velX = 0.0025, velY = 0, downX = 0, downY = 0;
-
-      wrap.addEventListener('pointerdown', e => {
-        dragging = true; lastX = e.clientX; lastY = e.clientY;
-        downX = e.clientX; downY = e.clientY;
-        wrap.setPointerCapture(e.pointerId);
-      });
-      wrap.addEventListener('pointermove', e => {
-        if (!dragging) return;
-        const dx = e.clientX - lastX, dy = e.clientY - lastY;
-        lastX = e.clientX; lastY = e.clientY;
-        globeMesh.rotation.y += dx * 0.005;
-        globeMesh.rotation.x += dy * 0.005;
-        velX = dx * 0.0006; velY = dy * 0.0006;
-      });
-      wrap.addEventListener('pointerup',   e => {
-        dragging = false;
-        if (Math.hypot(e.clientX - downX, e.clientY - downY) < 5) globeClickAt(e.clientX, e.clientY);
-      });
-      wrap.addEventListener('pointerleave',() => dragging = false);
-
-      /* ── Zoom: closer = bigger photos ── */
-      const ZMIN = 1.12, ZMAX = 2.6;
-      let zoomTarget = 2.6, zoomCur = 2.6;
-      const MAX_SCALE = 0.15;
-
-      wrap.addEventListener('wheel', e => {
-        e.preventDefault();
-        zoomTarget = Math.min(ZMAX, Math.max(ZMIN, zoomTarget + e.deltaY * 0.0016));
-      }, { passive: false });
-
-      let pinchStartDist = null, pinchStartZoom = null;
-      wrap.addEventListener('touchstart', e => {
-        if (e.touches.length === 2) {
-          pinchStartDist = Math.hypot(
-            e.touches[0].clientX - e.touches[1].clientX,
-            e.touches[0].clientY - e.touches[1].clientY
-          );
-          pinchStartZoom = zoomTarget;
-        }
-      }, { passive: true });
-      wrap.addEventListener('touchmove', e => {
-        if (e.touches.length === 2 && pinchStartDist) {
-          const d = Math.hypot(
-            e.touches[0].clientX - e.touches[1].clientX,
-            e.touches[0].clientY - e.touches[1].clientY
-          );
-          zoomTarget = Math.min(ZMAX, Math.max(ZMIN, pinchStartZoom * (pinchStartDist / d)));
-        }
-      }, { passive: true });
-      wrap.addEventListener('touchend', e => { if (e.touches.length < 2) pinchStartDist = null; });
-
-      function animate() {
-        requestAnimationFrame(animate);
-        if (!dragging) {
-          globeMesh.rotation.y += velX || 0.0025;
-          globeMesh.rotation.x += velY;
-          velY *= 0.94;
-          if (Math.abs(velX) > 0.0025) velX *= 0.94;
-        }
-
-        zoomCur += (zoomTarget - zoomCur) * 0.08;
-        globeCamera.position.z = zoomCur;
-
-        const t = Math.max(0, 1 - (zoomCur - ZMIN) / (ZMAX - ZMIN));
-        const s = BASE_SCALE + (MAX_SCALE - BASE_SCALE) * Math.pow(t, 1.4);
-        for (let i = 0; i < markers.length; i++) markers[i].scale.set(s, s, 1);
-
-        globeRenderer.render(globeScene, globeCamera);
-      }
-      animate();
-
-      window.addEventListener('resize', () => {
-        if (currentPage !== 'page-globe') return;
-        globeCamera.aspect = wrap.clientWidth / wrap.clientHeight;
-        globeCamera.updateProjectionMatrix();
-        globeRenderer.setSize(wrap.clientWidth, wrap.clientHeight);
-      });
     }
-    globeRenderer.setSize(wrap.clientWidth, wrap.clientHeight);
-    globeCamera.aspect = wrap.clientWidth / wrap.clientHeight;
-    globeCamera.updateProjectionMatrix();
+    globeGridPts = pts;
+    const idx = new Map();
+    pts.forEach(([x, y]) => {
+      const key = Math.round(x / step) + ',' + Math.round(y / step);
+      if (!idx.has(key)) idx.set(key, []);
+      idx.get(key).push([x, y]);
+    });
+    globeGridIndex = { map: idx, step };
+
+    if (globeDotEls) globeDotEls.forEach(el => el.remove());
+    const frag = document.createDocumentFragment();
+    globeDotEls = pts.map(([x, y]) => {
+      const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      c.setAttribute('class', 'globe-dot');
+      c.setAttribute('cx', x.toFixed(2));
+      c.setAttribute('cy', y.toFixed(2));
+      c.setAttribute('r', r.toFixed(2));
+      frag.appendChild(c);
+      return c;
+    });
+    globeDotsLayer.appendChild(frag);
+  }
+
+  function nearestGridPoint(x, y) {
+    if (!globeGridIndex) return [x, y];
+    const step = globeGridIndex.step;
+    const cx = Math.round(x / step), cy = Math.round(y / step);
+    let best = null, bestDist = Infinity;
+    for (let dx = -1; dx <= 1; dx++) {
+      for (let dy = -1; dy <= 1; dy++) {
+        const bucket = globeGridIndex.map.get((cx + dx) + ',' + (cy + dy));
+        if (!bucket) continue;
+        for (const pt of bucket) {
+          const ddx = pt[0] - x, ddy = pt[1] - y;
+          const d = ddx * ddx + ddy * ddy;
+          if (d < bestDist) { bestDist = d; best = pt; }
+        }
+      }
+    }
+    return best || [x, y];
+  }
+
+  function createMarkerEls(pics) {
+    const frag = document.createDocumentFragment();
+    globeMarkerData = pics.map(it => {
+      const img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+      img.setAttributeNS('http://www.w3.org/1999/xlink', 'href', 'img/pics-thumb/' + encodeURIComponent(it.thumb));
+      img.setAttribute('class', 'globe-marker');
+      img.style.display = 'none';
+      img.addEventListener('click', () => openPicsLightbox(it.full));
+      frag.appendChild(img);
+      return { el: img, lon: it.lon, lat: it.lat };
+    });
+    globeMarkersLayer.appendChild(frag);
+  }
+
+  function drawGlobe() {
+    const proj = globeProjection();
+    for (let i = 0; i < globeDotEls.length; i++) {
+      const el = globeDotEls[i];
+      const x = globeGridPts[i][0], y = globeGridPts[i][1];
+      const inv = proj.invert([x, y]);
+      let show = false;
+      if (inv && isFinite(inv[0]) && isFinite(inv[1])) show = isLand(inv[0], inv[1]);
+      el.style.display = show ? '' : 'none';
+    }
+    const zoomScale = globeViewBox.w / GLOBE_SIZE;
+    const size = GLOBE_DOT_R * 2.8 * zoomScale;
+    globeMarkerData.forEach(m => {
+      const p = proj([m.lon, m.lat]);
+      if (!p) { m.el.style.display = 'none'; return; }
+      const [sx, sy] = nearestGridPoint(p[0], p[1]);
+      m.el.setAttribute('x', (sx - size / 2).toFixed(2));
+      m.el.setAttribute('y', (sy - size / 2).toFixed(2));
+      m.el.setAttribute('width', size.toFixed(2));
+      m.el.setAttribute('height', size.toFixed(2));
+      m.el.style.display = '';
+    });
+  }
+
+  function zoomGlobeBy(factor) {
+    const newW = Math.max(GLOBE_MIN_VB, Math.min(GLOBE_MAX_VB, globeViewBox.w * factor));
+    const cx = globeViewBox.x + globeViewBox.w / 2, cy = globeViewBox.y + globeViewBox.h / 2;
+    globeViewBox = { x: cx - newW / 2, y: cy - newW / 2, w: newW, h: newW };
+    applyGlobeVB();
+    const zoomScale = newW / GLOBE_SIZE;
+    if (Math.abs(zoomScale - globeGridBuiltForScale) / globeGridBuiltForScale > 0.12) {
+      rebuildGlobeGrid();
+    }
+    drawGlobe();
+  }
+
+  function wireGlobeInteraction() {
+    const wrap = globeWrapEl;
+    let dragging = false, lastX = 0, lastY = 0, velX = 0.1, velY = 0, downX = 0, downY = 0;
+
+    function pxToDeg(px) {
+      const rect = globeSvgEl.getBoundingClientRect();
+      const svgPerPx = globeViewBox.w / rect.width;
+      const scale = globeProjection().scale();
+      return (px * svgPerPx) * (90 / (Math.PI * scale));
+    }
+
+    wrap.addEventListener('pointerdown', e => {
+      dragging = true; lastX = e.clientX; lastY = e.clientY;
+      downX = e.clientX; downY = e.clientY;
+      wrap.setPointerCapture(e.pointerId);
+    });
+    wrap.addEventListener('pointermove', e => {
+      if (!dragging) return;
+      const dx = e.clientX - lastX, dy = e.clientY - lastY;
+      lastX = e.clientX; lastY = e.clientY;
+      const dDeg = pxToDeg(dx), dDegY = pxToDeg(dy);
+      globeRotation[0] += dDeg;
+      globeRotation[1] = Math.max(-90, Math.min(90, globeRotation[1] - dDegY));
+      velX = dDeg * 0.18; velY = dDegY * 0.18;
+      drawGlobe();
+    });
+    wrap.addEventListener('pointerup', e => { dragging = false; });
+    wrap.addEventListener('pointerleave', () => dragging = false);
+
+    function tick() {
+      requestAnimationFrame(tick);
+      if (!dragging && currentPage === 'page-globe') {
+        globeRotation[0] += velX || 0.1;
+        globeRotation[1] = Math.max(-90, Math.min(90, globeRotation[1] - velY));
+        velY *= 0.94;
+        if (Math.abs(velX) > 0.1) velX *= 0.94;
+        drawGlobe();
+      }
+    }
+    requestAnimationFrame(tick);
+
+    wrap.addEventListener('wheel', e => {
+      e.preventDefault();
+      zoomGlobeBy(Math.exp(e.deltaY * 0.0016));
+    }, { passive: false });
+
+    let pinchDist = null;
+    wrap.addEventListener('touchstart', e => {
+      if (e.touches.length === 2) {
+        pinchDist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+      }
+    }, { passive: true });
+    wrap.addEventListener('touchmove', e => {
+      if (e.touches.length === 2 && pinchDist) {
+        const d = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        zoomGlobeBy(pinchDist / d);
+        pinchDist = d;
+      }
+    }, { passive: true });
+    wrap.addEventListener('touchend', e => { if (e.touches.length < 2) pinchDist = null; });
   }
 
   /* ── Slideshow ── */
