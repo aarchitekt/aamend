@@ -185,6 +185,15 @@
 
   .page.active { display: flex; flex-direction: column; }
 
+  #globe-canvas-wrap {
+    width: 100%;
+    height: 100vh;
+    cursor: grab;
+    touch-action: none;
+  }
+  #globe-canvas-wrap:active { cursor: grabbing; }
+  #globe-canvas-wrap canvas { display: block; }
+
   .slideshow {
     position: relative;
     width: 100%;
@@ -395,7 +404,7 @@
   <div class="bottom-nav">
     <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
     <div class="footer-arrow">↓</div>
-    <a href="https://aamend.com/pics" target="_blank">Pics</a>
+    <a onclick="showGlobe()">Pics</a>
   </div>
 </div>
 
@@ -437,7 +446,7 @@
 <div id="cv-footer" class="bottom-nav" style="display:none;width:100vw;margin-left:calc(50% - 50vw);margin-right:calc(50% - 50vw);">
   <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
   <div class="footer-arrow">↓</div>
-  <a href="https://aamend.com/pics" target="_blank">Pics</a>
+  <a onclick="showGlobe()">Pics</a>
 </div>
 
 <!-- PROJECT PAGES -->
@@ -455,7 +464,7 @@
   <div class="bottom-nav">
     <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
     <div class="footer-arrow">↓</div>
-    <a href="https://aamend.com/pics" target="_blank">Pics</a>
+    <a onclick="showGlobe()">Pics</a>
   </div>
 </div>
 
@@ -487,7 +496,7 @@
   <div class="bottom-nav">
     <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
     <div class="footer-arrow">↓</div>
-    <a href="https://aamend.com/pics" target="_blank">Pics</a>
+    <a onclick="showGlobe()">Pics</a>
   </div>
 </div>
 
@@ -507,7 +516,7 @@
   <div class="bottom-nav">
     <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
     <div class="footer-arrow">↓</div>
-    <a href="https://aamend.com/pics" target="_blank">Pics</a>
+    <a onclick="showGlobe()">Pics</a>
   </div>
 </div>
 
@@ -531,7 +540,7 @@
   <div class="bottom-nav">
     <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
     <div class="footer-arrow">↓</div>
-    <a href="https://aamend.com/pics" target="_blank">Pics</a>
+    <a onclick="showGlobe()">Pics</a>
   </div>
 </div>
 
@@ -554,7 +563,7 @@
   <div class="bottom-nav">
     <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
     <div class="footer-arrow">↓</div>
-    <a href="https://aamend.com/pics" target="_blank">Pics</a>
+    <a onclick="showGlobe()">Pics</a>
   </div>
 </div>
 
@@ -575,7 +584,7 @@
   <div class="bottom-nav">
     <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
     <div class="footer-arrow">↓</div>
-    <a href="https://aamend.com/pics" target="_blank">Pics</a>
+    <a onclick="showGlobe()">Pics</a>
   </div>
 </div>
 
@@ -614,7 +623,7 @@
   <div class="bottom-nav">
     <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
     <div class="footer-arrow">↓</div>
-    <a href="https://aamend.com/pics" target="_blank">Pics</a>
+    <a onclick="showGlobe()">Pics</a>
   </div>
 </div>
 
@@ -640,7 +649,7 @@
   <div class="bottom-nav">
     <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
     <div class="footer-arrow">↓</div>
-    <a href="https://aamend.com/pics" target="_blank">Pics</a>
+    <a onclick="showGlobe()">Pics</a>
   </div>
 </div>
 
@@ -668,7 +677,7 @@
   <div class="bottom-nav">
     <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
     <div class="footer-arrow">↓</div>
-    <a href="https://aamend.com/pics" target="_blank">Pics</a>
+    <a onclick="showGlobe()">Pics</a>
   </div>
 </div>
 
@@ -692,7 +701,7 @@
   <div class="bottom-nav">
     <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
     <div class="footer-arrow">↓</div>
-    <a href="https://aamend.com/pics" target="_blank">Pics</a>
+    <a onclick="showGlobe()">Pics</a>
   </div>
 </div>
 
@@ -717,10 +726,20 @@
   <div class="bottom-nav">
     <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
     <div class="footer-arrow">↓</div>
-    <a href="https://aamend.com/pics" target="_blank">Pics</a>
+    <a onclick="showGlobe()">Pics</a>
   </div>
 </div>
 
+<div id="page-globe" class="page">
+  <div id="globe-canvas-wrap"></div>
+  <div class="bottom-nav">
+    <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
+    <div class="footer-arrow">↓</div>
+    <a onclick="showGlobe()">Pics</a>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
   const home    = document.getElementById('home');
   const cvPage  = document.getElementById('cv-page');
@@ -774,6 +793,88 @@
     window.scrollTo(0, 0);
     arrow.style.display = 'block';
     arrow.style.opacity = '1';
+  }
+
+  function showGlobe() {
+    hideHome();
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    cvPage.classList.remove('active');
+    document.getElementById('cv-footer').style.display = 'none';
+    const page = document.getElementById('page-globe');
+    page.classList.add('active');
+    navBack.style.display = 'block';
+    navCV.style.display   = 'block';
+    window.scrollTo(0, 0);
+    currentPage = 'page-globe';
+    arrow.style.display = 'none';
+    initGlobe();
+  }
+
+  /* ── Globe (Pics) ── */
+  let globeInited = false;
+  let globeRenderer, globeScene, globeCamera, globeMesh;
+  function initGlobe() {
+    const wrap = document.getElementById('globe-canvas-wrap');
+    if (!globeInited) {
+      globeInited = true;
+      globeScene = new THREE.Scene();
+      globeCamera = new THREE.PerspectiveCamera(45, wrap.clientWidth / wrap.clientHeight, 0.1, 100);
+      globeCamera.position.z = 2.6;
+
+      globeRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      globeRenderer.setPixelRatio(window.devicePixelRatio);
+      wrap.appendChild(globeRenderer.domElement);
+
+      const geo = new THREE.SphereGeometry(1, 64, 64);
+      const tex = new THREE.TextureLoader().load('assets/earth-texture.jpg');
+      const mat = new THREE.MeshPhongMaterial({ map: tex, shininess: 4 });
+      globeMesh = new THREE.Mesh(geo, mat);
+      globeScene.add(globeMesh);
+
+      globeScene.add(new THREE.AmbientLight(0xffffff, 0.65));
+      const dir = new THREE.DirectionalLight(0xffffff, 0.9);
+      dir.position.set(4, 2, 5);
+      globeScene.add(dir);
+
+      let dragging = false, lastX = 0, lastY = 0, velX = 0.0025, velY = 0;
+
+      wrap.addEventListener('pointerdown', e => {
+        dragging = true; lastX = e.clientX; lastY = e.clientY;
+        wrap.setPointerCapture(e.pointerId);
+      });
+      wrap.addEventListener('pointermove', e => {
+        if (!dragging) return;
+        const dx = e.clientX - lastX, dy = e.clientY - lastY;
+        lastX = e.clientX; lastY = e.clientY;
+        globeMesh.rotation.y += dx * 0.005;
+        globeMesh.rotation.x += dy * 0.005;
+        velX = dx * 0.0006; velY = dy * 0.0006;
+      });
+      wrap.addEventListener('pointerup',   () => dragging = false);
+      wrap.addEventListener('pointerleave',() => dragging = false);
+
+      function animate() {
+        requestAnimationFrame(animate);
+        if (!dragging) {
+          globeMesh.rotation.y += velX || 0.0025;
+          globeMesh.rotation.x += velY;
+          velY *= 0.94;
+          if (Math.abs(velX) > 0.0025) velX *= 0.94;
+        }
+        globeRenderer.render(globeScene, globeCamera);
+      }
+      animate();
+
+      window.addEventListener('resize', () => {
+        if (currentPage !== 'page-globe') return;
+        globeCamera.aspect = wrap.clientWidth / wrap.clientHeight;
+        globeCamera.updateProjectionMatrix();
+        globeRenderer.setSize(wrap.clientWidth, wrap.clientHeight);
+      });
+    }
+    globeRenderer.setSize(wrap.clientWidth, wrap.clientHeight);
+    globeCamera.aspect = wrap.clientWidth / wrap.clientHeight;
+    globeCamera.updateProjectionMatrix();
   }
 
   /* ── Slideshow ── */
