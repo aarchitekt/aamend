@@ -98,7 +98,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding-top: 12vh;
+    padding-top: 22vh;
   }
 
   #home h1 {
@@ -128,11 +128,8 @@
   .project-item img,
   .project-item video {
     display: block;
-    margin: 0 auto 1.2rem;
+    margin: 0 auto;
   }
-
-  .project-item img:last-child,
-  .project-item video:last-child { margin-bottom: 0; }
 
   @media (max-width: 700px) {
     .project-item img, .project-item video {
@@ -428,6 +425,7 @@
 
     <div class="project-item" onclick="showProject('page-project2')">
       <img src="img/rendu1.jpeg" alt="" style="width:29.61vw;max-width:533px;" loading="lazy">
+      <div style="height:9vh;width:100%"></div>
       <img src="img/PerspektiveAu_en_3KM.png" alt="" style="width:44.89vw;max-width:808px;" loading="lazy">
     </div>
     <div style="height:9vh;width:100%"></div>
