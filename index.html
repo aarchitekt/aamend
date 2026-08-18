@@ -317,6 +317,12 @@
   .slide-track img.active,
   .slide-track video.active { display: block; }
 
+  /* Pics page: photos shown ~30% smaller than the default slideshow sizing above */
+  #pics-slide-track img {
+    max-width: 64vw;
+    max-height: 64vh;
+  }
+
   .slide-arrow {
     position: absolute;
     top: 50%;
@@ -456,7 +462,7 @@
   <div class="projects-feed">
 
     <div class="project-item" onclick="showProject('page-project10')">
-      <img src="img/python-2.jpg" alt="" style="width:27.72vw;max-width:499px;" loading="lazy">
+      <img src="img/python-3.png" alt="" style="width:27.72vw;max-width:499px;" loading="lazy">
     </div>
     <div style="height:9vh;width:100%"></div>
 
@@ -476,7 +482,7 @@
     <div style="height:9vh;width:100%"></div>
 
     <div class="project-item" onclick="showProject('page-project9')">
-      <img src="img/IMG_1359-2.jpg" alt="" style="width:23.89vw;max-width:430px;" loading="lazy">
+      <img src="img/IMG_1359-3.png" alt="" style="width:23.89vw;max-width:430px;" loading="lazy">
     </div>
     <div style="height:9vh;width:100%"></div>
 
@@ -579,7 +585,10 @@
     <button class="slide-arrow prev" onclick="stepSlide(-1)">&#8249;</button>
     <button class="slide-arrow next" onclick="stepSlide(1)">&#8250;</button>
   </div>
-  <div class="bottom-nav">
+    <div class="project-meta">
+    <div class="meta-col"></div><div class="meta-col"></div>
+  </div>
+<div class="bottom-nav">
     <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
     <div class="footer-arrow">↓</div>
     <a onclick="showPicsSlideshow()">Pics</a>
@@ -631,7 +640,10 @@
     <button class="slide-arrow prev" onclick="stepSlide(-1)">&#8249;</button>
     <button class="slide-arrow next" onclick="stepSlide(1)">&#8250;</button>
   </div>
-  <div class="bottom-nav">
+    <div class="project-meta">
+    <div class="meta-col"></div><div class="meta-col"></div>
+  </div>
+<div class="bottom-nav">
     <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
     <div class="footer-arrow">↓</div>
     <a onclick="showPicsSlideshow()">Pics</a>
@@ -841,7 +853,10 @@
     <button class="slide-arrow prev" onclick="stepSlide(-1)">&#8249;</button>
     <button class="slide-arrow next" onclick="stepSlide(1)">&#8250;</button>
   </div>
-  <div class="bottom-nav">
+    <div class="project-meta">
+    <div class="meta-col"></div><div class="meta-col"></div>
+  </div>
+<div class="bottom-nav">
     <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
     <div class="footer-arrow">↓</div>
     <a onclick="showPicsSlideshow()">Pics</a>
@@ -1442,3 +1457,4 @@
 </script>
 </body>
 </html>
+

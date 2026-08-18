@@ -13,7 +13,7 @@
     color: #1a1a1a;
   }
   header {
-    position: sticky; top: 0; z-index: 50;
+    position: sticky; top: 0; z-index: 60;
     background: #111; color: #fff;
     padding: 1rem 1.5rem;
     display: flex; align-items: center; justify-content: space-between;
@@ -28,10 +28,24 @@
   #publish-btn:disabled { opacity: 0.5; cursor: default; }
   #publish-status { font-size: 0.8rem; color: #9fdb9f; min-width: 200px; text-align: right; }
   #publish-status.error { color: #ff9a9a; }
+
+  #jumpbar {
+    position: sticky; top: 58px; z-index: 55;
+    background: #fff; border-bottom: 1px solid #e5e5e2;
+    padding: 0.55rem 1.5rem; display: flex; gap: 0.4rem; overflow-x: auto;
+    white-space: nowrap;
+  }
+  #jumpbar a {
+    font-size: 0.72rem; color: #555; text-decoration: none; background: #f0f0ee;
+    padding: 0.3rem 0.65rem; border-radius: 999px; flex: none;
+  }
+  #jumpbar a:hover { background: #e2e2de; }
+
   main { max-width: 1100px; margin: 0 auto; padding: 1.5rem; }
   section { margin-bottom: 3rem; }
   section h2 { font-size: 1rem; font-weight: 600; margin-bottom: 0.25rem; }
   section .hint { font-size: 0.8rem; color: #888; margin-bottom: 1rem; }
+
   .grid {
     display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.75rem;
   }
@@ -65,27 +79,55 @@
     cursor: pointer;
   }
   .add-thumb:hover { background: #e4e4e4; }
+
+  /* ── Home feed: card-based, one card per project-item block (may hold >1 image) ── */
+  #home-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 1rem;
+  }
+  .home-card {
+    background: #fff; border-radius: 10px; padding: 0.65rem 0.65rem 0.55rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); cursor: grab;
+    border: 2px solid transparent;
+  }
+  .home-card.dragging { opacity: 0.35; }
+  .home-card .imgs {
+    display: flex; gap: 0.35rem; margin-bottom: 0.4rem;
+  }
+  .home-card .imgs .thumb { flex: 1; cursor: pointer; }
+  .home-card .label {
+    font-size: 0.68rem; color: #888; display: flex; align-items: center; justify-content: space-between;
+    gap: 0.4rem;
+  }
+  .home-card .label .drag-handle { color: #bbb; font-size: 0.9rem; cursor: grab; }
+  .home-card .label span.name { font-weight: 600; color: #555; }
+  .add-project-card {
+    border-radius: 10px; border: 2px dashed #bbb; background: #eee;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-height: 140px; color: #888; font-size: 0.8rem; cursor: pointer; gap: 0.35rem;
+    text-align: center; padding: 0.5rem;
+  }
+  .add-project-card:hover { background: #e4e4e4; }
+  .add-project-card .plus { font-size: 1.8rem; line-height: 1; }
+
   .project-card {
     background: #fff; border-radius: 10px; padding: 1rem 1.25rem 1.25rem; margin-bottom: 1.25rem;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); scroll-margin-top: 120px;
   }
   .project-card h3 { font-size: 0.85rem; font-weight: 700; margin: 0 0 0.75rem; color: #444; }
   .meta-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-top: 0.9rem; }
+  .meta-fields label { font-size: 0.65rem; color: #999; margin-bottom: 0.2rem; display: block; }
   .meta-fields textarea {
-    width: 100%; min-height: 70px; font-family: inherit; font-size: 0.78rem;
+    width: 100%; min-height: 90px; font-family: inherit; font-size: 0.8rem; line-height: 1.4;
     border: 1px solid #ddd; border-radius: 6px; padding: 0.5rem; resize: vertical;
   }
-  .meta-fields button {
-    grid-column: 1 / -1; justify-self: start; font-size: 0.75rem; padding: 0.4rem 0.9rem;
-    border-radius: 6px; border: 1px solid #ccc; background: #f7f7f7; cursor: pointer;
+  .meta-fields textarea:focus { border-color: #999; outline: none; }
+  .save-hint {
+    grid-column: 1 / -1; font-size: 0.72rem; color: #7bbf7b; height: 1em;
+    opacity: 0; transition: opacity 0.3s;
   }
+  .save-hint.show { opacity: 1; }
+
   input[type=file] { display: none; }
-  #toast {
-    position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
-    background: #111; color: #fff; padding: 0.6rem 1.2rem; border-radius: 8px;
-    font-size: 0.85rem; opacity: 0; pointer-events: none; transition: opacity 0.2s;
-  }
-  #toast.show { opacity: 1; }
   #loading { padding: 3rem; text-align: center; color: #999; }
 </style>
 </head>
@@ -93,8 +135,8 @@
 
 <header>
   <div>
-    <h1>aamend.com — Bilder verwalten</h1>
-    <div class="sub">Klick auf ein Bild = ersetzen · Ziehen = Reihenfolge ändern · rotes × = löschen</div>
+    <h1>aamend.com — Seite verwalten</h1>
+    <div class="sub">Startseite: Karten ziehen = Reihenfolge · Klick auf Bild = ersetzen · + = neues Projekt</div>
   </div>
   <div style="display:flex;align-items:center;gap:0.75rem;">
     <span id="publish-status"></span>
@@ -102,31 +144,24 @@
   </div>
 </header>
 
+<nav id="jumpbar" style="display:none"></nav>
+
 <main>
   <div id="loading">Lädt…</div>
   <section id="home-section" style="display:none">
-    <h2>Startseite — Vorschaubilder</h2>
-    <div class="hint">Diese Bilder erscheinen im Feed auf der Startseite. Klicken zum Ersetzen.</div>
-    <div class="grid" id="home-grid"></div>
+    <h2>Startseite — Reihenfolge &amp; Vorschaubilder</h2>
+    <div class="hint">Jede Karte entspricht einem Eintrag im Startseiten-Feed. Ziehen zum Umsortieren, Klick auf ein Bild zum Ersetzen.</div>
+    <div id="home-grid"></div>
   </section>
   <section id="projects-section" style="display:none">
     <h2>Projekte</h2>
-    <div class="hint">Jedes Projekt hat seine eigene Bilderstrecke (Slideshow) und optional einen Beschreibungstext.</div>
+    <div class="hint">Jedes Projekt hat eine Bilderstrecke und zwei Textspalten darunter — einfach normal reintexten, Zeilenumbrüche werden übernommen.</div>
     <div id="projects-list"></div>
   </section>
 </main>
 
-<div id="toast"></div>
-
 <script>
 let DATA = null;
-
-function toast(msg, isError) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'show' + (isError ? ' error' : '');
-  setTimeout(() => { t.className = ''; }, 3000);
-}
 
 async function load() {
   const res = await fetch('/api/projects');
@@ -138,30 +173,136 @@ function render() {
   document.getElementById('loading').style.display = 'none';
   document.getElementById('home-section').style.display = '';
   document.getElementById('projects-section').style.display = '';
+  renderJumpbar();
   renderHome();
   renderProjects();
 }
 
+function renderJumpbar() {
+  const bar = document.getElementById('jumpbar');
+  bar.style.display = '';
+  bar.innerHTML = '';
+  DATA.projects.forEach(p => {
+    const a = document.createElement('a');
+    a.href = '#card-' + p.id;
+    a.textContent = p.id.replace(/^page-/, '');
+    bar.appendChild(a);
+  });
+}
+
+// ── Home feed: one draggable card per project-item block ──
 function renderHome() {
   const grid = document.getElementById('home-grid');
   grid.innerHTML = '';
   DATA.home.forEach(item => {
-    const el = document.createElement('div');
-    el.className = 'thumb';
-    el.innerHTML = `<img src="/${item.src}?t=${Date.now()}" loading="lazy">
-      <div class="path">${item.src}</div>
-      <div class="overlay">Ersetzen</div>`;
-    el.addEventListener('click', () => pickAndReplace(item.src, el));
-    grid.appendChild(el);
+    const card = document.createElement('div');
+    card.className = 'home-card';
+    card.draggable = true;
+    card.dataset.index = item.index;
+
+    const imgsEl = document.createElement('div');
+    imgsEl.className = 'imgs';
+    item.images.forEach(src => {
+      const t = document.createElement('div');
+      t.className = 'thumb';
+      t.innerHTML = `<img src="/${src}?t=${Date.now()}" loading="lazy"><div class="overlay">Ersetzen</div>`;
+      t.addEventListener('click', (e) => { e.stopPropagation(); pickAndReplace(src, t); });
+      imgsEl.appendChild(t);
+    });
+    card.appendChild(imgsEl);
+
+    const label = document.createElement('div');
+    label.className = 'label';
+    label.innerHTML = `<span class="name">${item.pageId.replace(/^page-/, '')}</span><span class="drag-handle">⠿⠿</span>`;
+    card.appendChild(label);
+
+    grid.appendChild(card);
+  });
+
+  const addCard = document.createElement('div');
+  addCard.className = 'add-project-card';
+  addCard.innerHTML = `<div class="plus">+</div><div>Neues Projekt anlegen</div>`;
+  addCard.addEventListener('click', pickAndAddProject);
+  grid.appendChild(addCard);
+
+  enableHomeDragReorder(grid);
+}
+
+function enableHomeDragReorder(grid) {
+  let dragEl = null;
+  grid.addEventListener('dragstart', (e) => {
+    const card = e.target.closest('.home-card');
+    if (!card) return;
+    dragEl = card;
+    card.classList.add('dragging');
+  });
+  grid.addEventListener('dragend', async () => {
+    if (!dragEl) return;
+    dragEl.classList.remove('dragging');
+    dragEl = null;
+    const order = [...grid.querySelectorAll('.home-card')].map(c => parseInt(c.dataset.index, 10));
+    const r = await fetch('/api/reorder-home', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ order })
+    });
+    if (r.ok) load(); else alert('Fehler beim Speichern der Reihenfolge.');
+  });
+  grid.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    const dragging = grid.querySelector('.dragging');
+    if (!dragging) return;
+    const after = getDragAfterElementCards(grid, e.clientX, e.clientY);
+    const addCard = grid.querySelector('.add-project-card');
+    if (after == null) {
+      grid.insertBefore(dragging, addCard);
+    } else {
+      grid.insertBefore(dragging, after);
+    }
   });
 }
 
+function getDragAfterElementCards(grid, x, y) {
+  const els = [...grid.querySelectorAll('.home-card:not(.dragging)')];
+  let closest = { offset: -Infinity, element: null };
+  for (const el of els) {
+    const box = el.getBoundingClientRect();
+    const centerY = box.top + box.height / 2;
+    const centerX = box.left + box.width / 2;
+    const sameRow = Math.abs(y - centerY) < box.height;
+    const offset = sameRow ? (x - centerX) : (y - centerY < 0 ? -1 : Infinity);
+    if (offset < 0 && offset > closest.offset) closest = { offset, element: el };
+  }
+  return closest.element;
+}
+
+function pickAndAddProject() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.onchange = async () => {
+    if (!input.files[0]) return;
+    const fd = new FormData();
+    fd.append('image', input.files[0]);
+    try {
+      const r = await fetch('/api/add-project', { method: 'POST', body: fd });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || 'Fehler');
+      load();
+    } catch (e) {
+      alert('Fehler: ' + e.message);
+    }
+  };
+  input.click();
+}
+
+// ── Projects: per-project slideshow + plain-text meta ──
 function renderProjects() {
   const list = document.getElementById('projects-list');
   list.innerHTML = '';
   DATA.projects.forEach(project => {
     const card = document.createElement('div');
     card.className = 'project-card';
+    card.id = 'card-' + project.id;
     card.innerHTML = `<h3>${project.id.replace(/^page-/, '')}</h3>
       <div class="grid" data-page="${project.id}"></div>`;
     list.appendChild(card);
@@ -177,24 +318,39 @@ function renderProjects() {
 
     enableDragReorder(grid, project.id);
 
-    if (project.meta) {
-      const fields = document.createElement('div');
-      fields.className = 'meta-fields';
-      fields.innerHTML = `
-        <textarea data-col="1" placeholder="Spalte 1 (z.B. Auftraggeber)">${project.meta.col1}</textarea>
-        <textarea data-col="2" placeholder="Spalte 2 (z.B. Beschreibung)">${project.meta.col2}</textarea>
-        <button>Text speichern</button>`;
-      fields.querySelector('button').addEventListener('click', async () => {
+    const meta = project.meta || { col1: '', col2: '' };
+    const fields = document.createElement('div');
+    fields.className = 'meta-fields';
+    fields.innerHTML = `
+      <div><label>Spalte 1</label><textarea data-col="1" placeholder="z.B. Auftraggeber, Ort, Jahr…"></textarea></div>
+      <div><label>Spalte 2</label><textarea data-col="2" placeholder="z.B. Beschreibung…"></textarea></div>
+      <div class="save-hint">Gespeichert.</div>`;
+    fields.querySelector('[data-col="1"]').value = meta.col1;
+    fields.querySelector('[data-col="2"]').value = meta.col2;
+
+    let saveTimer = null;
+    const scheduleSave = () => {
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(async () => {
         const col1 = fields.querySelector('[data-col="1"]').value;
         const col2 = fields.querySelector('[data-col="2"]').value;
         const r = await fetch('/api/update-meta', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ pageId: project.id, col1, col2 })
         });
-        if (r.ok) toast('Text gespeichert.'); else toast('Fehler beim Speichern.', true);
-      });
-      card.appendChild(fields);
-    }
+        const hint = fields.querySelector('.save-hint');
+        if (r.ok) {
+          hint.textContent = 'Gespeichert.';
+          hint.classList.add('show');
+          setTimeout(() => hint.classList.remove('show'), 1500);
+        } else {
+          hint.textContent = 'Fehler beim Speichern.';
+          hint.classList.add('show');
+        }
+      }, 700);
+    };
+    fields.querySelectorAll('textarea').forEach(t => t.addEventListener('input', scheduleSave));
+    card.appendChild(fields);
   });
 }
 
@@ -216,7 +372,7 @@ function makeSlideThumb(pageId, src) {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ pageId, src })
     });
-    if (r.ok) { toast('Bild entfernt.'); load(); } else toast('Fehler beim Entfernen.', true);
+    if (r.ok) { load(); } else alert('Fehler beim Entfernen.');
   });
   return el;
 }
@@ -235,12 +391,9 @@ function pickAndReplace(relSrc, el) {
       const r = await fetch('/api/replace-image', { method: 'POST', body: fd });
       const j = await r.json();
       if (!r.ok) throw new Error(j.error || 'Fehler');
-      const img = el.querySelector('img');
-      img.src = `/${relSrc}?t=${Date.now()}`;
-      toast('Bild ersetzt und automatisch optimiert.');
+      load();
     } catch (e) {
-      toast('Fehler: ' + e.message, true);
-    } finally {
+      alert('Fehler: ' + e.message);
       el.classList.remove('uploading');
     }
   };
@@ -260,10 +413,9 @@ function pickAndAdd(pageId, el) {
       const r = await fetch('/api/add-image', { method: 'POST', body: fd });
       const j = await r.json();
       if (!r.ok) throw new Error(j.error || 'Fehler');
-      toast('Bild hinzugefügt.');
       load();
     } catch (e) {
-      toast('Fehler: ' + e.message, true);
+      alert('Fehler: ' + e.message);
     }
   };
   input.click();
@@ -285,7 +437,7 @@ function enableDragReorder(grid, pageId) {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ pageId, order })
     });
-    if (r.ok) toast('Reihenfolge gespeichert.'); else toast('Fehler beim Speichern der Reihenfolge.', true);
+    if (!r.ok) alert('Fehler beim Speichern der Reihenfolge.');
   });
   grid.addEventListener('dragover', (e) => {
     e.preventDefault();
@@ -337,3 +489,4 @@ load();
 </script>
 </body>
 </html>
+

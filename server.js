@@ -18,8 +18,9 @@ app.use(express.static(ROOT, { extensions: ['html'] }));
 // ───────────────────────── helpers: safe, targeted HTML surgery ─────────────────────────
 // We never fully re-parse/re-serialize index.html (risky for a large hand-written file
 // full of inline <script>/<style>). Instead we locate small, self-contained regions
-// (a project's <div class="slide-track">...</div>, its <div class="project-meta">...</div>)
-// with a simple brace/tag depth counter, and only rewrite text inside that region.
+// (a project's <div class="slide-track">...</div>, its <div class="project-meta">...</div>,
+// the <div class="projects-feed">...</div> home list) with a simple tag-depth counter, and
+// only rewrite text inside that region.
 
 function findDivBlock(html, startIdx) {
   // startIdx must point at the '<' of the opening <div ...> tag.
@@ -63,6 +64,13 @@ function listAllProjectPages(html) {
   return ids;
 }
 
+function nextProjectId(html) {
+  const re = /id="page-project(\d+)"/g;
+  let m, max = 0;
+  while ((m = re.exec(html))) max = Math.max(max, parseInt(m[1], 10));
+  return `page-project${max + 1}`;
+}
+
 function extractSlideImages(pageHtml) {
   const trackMatch = /<div class="slide-track">([\s\S]*?)<\/div>/.exec(pageHtml);
   if (!trackMatch) return [];
@@ -79,32 +87,86 @@ function getMetaBlock(pageHtml) {
   return findDivBlock(pageHtml, idx);
 }
 
+// ── plain-text <-> stored-HTML conversion for the two meta columns ──
+// So the admin UI can be a plain textarea: no visible <br>/<strong> tags.
+// A blank line (double newline) round-trips to "<br><br>" exactly like the
+// hand-authored originals did.
+function htmlToPlainText(html) {
+  return html
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/?strong>/gi, '')
+    .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'")
+    .trim();
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function plainTextToHtml(text) {
+  return String(text || '').split('\n').map(escapeHtml).join('<br>');
+}
+
 function extractMeta(pageHtml) {
   const block = getMetaBlock(pageHtml);
   if (!block) return null;
   const inner = pageHtml.slice(block.openEnd, block.closeStart);
-  const cols = [...inner.matchAll(/<div class="meta-col">([\s\S]*?)<\/div>/g)].map(m => m[1].trim());
+  const cols = [...inner.matchAll(/<div class="meta-col">([\s\S]*?)<\/div>/g)].map(m => htmlToPlainText(m[1]));
   return { col1: cols[0] || '', col2: cols[1] || '' };
+}
+
+function getProjectsFeedBlock(html) {
+  const idx = html.indexOf('class="projects-feed"');
+  if (idx === -1) return null;
+  const divStart = html.lastIndexOf('<div', idx);
+  return findDivBlock(html, divStart);
+}
+
+const HOME_SPACER = '<div style="height:9vh;width:100%"></div>';
+
+function extractHomeItems(html) {
+  const block = getProjectsFeedBlock(html);
+  if (!block) return [];
+  const inner = html.slice(block.openEnd, block.closeStart);
+  const items = [];
+  const itemRe = /<div class="project-item" onclick="showProject\('([^']+)'\)">/g;
+  let m;
+  while ((m = itemRe.exec(inner))) {
+    const itemBlock = findDivBlock(inner, m.index);
+    if (!itemBlock) continue;
+    const outerHtml = inner.slice(m.index, itemBlock.closeEnd);
+    const imgs = [...outerHtml.matchAll(/<img src="([^"]+)"/g)].map(x => x[1]);
+    items.push({ pageId: m[1], html: outerHtml, images: imgs });
+  }
+  return items;
+}
+
+// ── image processing: keep real transparency as PNG, otherwise flatten to a white JPEG ──
+// "Real" alpha = the image actually uses transparency (min alpha < 250), not just a PNG
+// that happens to carry an unused, fully-opaque alpha channel.
+async function hasRealAlpha(img, meta) {
+  if (!meta.hasAlpha) return false;
+  const stats = await img.clone().stats();
+  const alphaChan = stats.channels[stats.channels.length - 1];
+  return !!alphaChan && alphaChan.min < 250;
+}
+
+async function processUpload(buffer) {
+  let img = sharp(buffer).rotate();
+  const meta = await img.metadata();
+  const MAX_DIM = 2400;
+  if (Math.max(meta.width || 0, meta.height || 0) > MAX_DIM) {
+    img = img.resize({ width: MAX_DIM, height: MAX_DIM, fit: 'inside', withoutEnlargement: true });
+  }
+  const keepPng = await hasRealAlpha(img, meta);
+  return { img, keepPng };
 }
 
 // ───────────────────────────────── API: read project data ─────────────────────────────────
 app.get('/api/projects', (req, res) => {
   const html = fs.readFileSync(INDEX_PATH, 'utf8');
 
-  const homeThumbs = [];
-  const itemStartRe = /<div class="project-item" onclick="showProject\('([^']+)'\)">/g;
-  let sm;
-  while ((sm = itemStartRe.exec(html))) {
-    const divStart = sm.index;
-    const block = findDivBlock(html, divStart);
-    if (!block) continue;
-    const itemHtml = html.slice(block.openEnd, block.closeStart);
-    const imgRe = /<img src="([^"]+)"/g;
-    let im;
-    while ((im = imgRe.exec(itemHtml))) {
-      homeThumbs.push({ project: sm[1], src: im[1] });
-    }
-  }
+  const homeItems = extractHomeItems(html).map((it, i) => ({ index: i, pageId: it.pageId, images: it.images }));
 
   const pageIds = listAllProjectPages(html);
   const projects = pageIds.map(id => {
@@ -117,7 +179,7 @@ app.get('/api/projects', (req, res) => {
     };
   });
 
-  res.json({ home: homeThumbs, projects });
+  res.json({ home: homeItems, projects });
 });
 
 // ───────────────────────────────── API: replace an image file in place ─────────────────────
@@ -129,21 +191,27 @@ app.post('/api/replace-image', upload.single('image'), async (req, res) => {
     if (!abs.startsWith(ROOT)) return res.status(400).json({ error: 'invalid path' });
     if (!req.file) return res.status(400).json({ error: 'no file' });
 
-    const ext = path.extname(abs).toLowerCase();
-    let img = sharp(req.file.buffer).rotate();
-    const meta = await img.metadata();
-    const MAX_DIM = 2400;
-    if (Math.max(meta.width || 0, meta.height || 0) > MAX_DIM) {
-      img = img.resize({ width: MAX_DIM, height: MAX_DIM, fit: 'inside', withoutEnlargement: true });
+    const { img, keepPng } = await processUpload(req.file.buffer);
+
+    const dir = path.dirname(abs);
+    const base = path.basename(abs, path.extname(abs));
+    const newAbs = path.join(dir, base + (keepPng ? '.png' : '.jpg'));
+
+    if (keepPng) {
+      await img.png({ compressionLevel: 9 }).toFile(newAbs + '.tmp');
+    } else {
+      await img.flatten({ background: '#ffffff' }).jpeg({ quality: 86, progressive: true, mozjpeg: true }).toFile(newAbs + '.tmp');
+    }
+    fs.renameSync(newAbs + '.tmp', newAbs);
+    if (newAbs !== abs && fs.existsSync(abs)) fs.unlinkSync(abs);
+
+    const newRelPath = path.relative(ROOT, newAbs).split(path.sep).join('/');
+    if (newRelPath !== relPath) {
+      const html = fs.readFileSync(INDEX_PATH, 'utf8');
+      fs.writeFileSync(INDEX_PATH, html.split(`src="${relPath}"`).join(`src="${newRelPath}"`));
     }
 
-    if (ext === '.png') {
-      await img.png({ compressionLevel: 9 }).toFile(abs + '.tmp');
-    } else {
-      await img.flatten({ background: '#ffffff' }).jpeg({ quality: 86, progressive: true, mozjpeg: true }).toFile(abs + '.tmp');
-    }
-    fs.renameSync(abs + '.tmp', abs);
-    res.json({ ok: true, path: relPath, size: fs.statSync(abs).size });
+    res.json({ ok: true, path: newRelPath, size: fs.statSync(newAbs).size });
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: String(e) });
@@ -156,31 +224,24 @@ app.post('/api/add-image', upload.single('image'), async (req, res) => {
     const { pageId } = req.body;
     if (!pageId || !req.file) return res.status(400).json({ error: 'missing pageId or file' });
 
-    const origExt = (path.extname(req.file.originalname) || '.jpg').toLowerCase();
     const base = path.basename(req.file.originalname, path.extname(req.file.originalname))
       .replace(/[^a-zA-Z0-9_-]/g, '_') || 'img';
-    let filename = `${base}${origExt === '.png' ? '.png' : '.jpg'}`;
+
+    const { img, keepPng } = await processUpload(req.file.buffer);
+    const wantExt = keepPng ? '.png' : '.jpg';
+
+    let filename = `${base}${wantExt}`;
     let counter = 1;
     while (fs.existsSync(path.join(ROOT, 'img', filename))) {
-      filename = `${base}-${counter}${origExt === '.png' ? '.png' : '.jpg'}`;
+      filename = `${base}-${counter}${wantExt}`;
       counter++;
     }
     const abs = path.join(ROOT, 'img', filename);
 
-    let img = sharp(req.file.buffer).rotate();
-    const meta = await img.metadata();
-    const MAX_DIM = 2400;
-    if (Math.max(meta.width || 0, meta.height || 0) > MAX_DIM) {
-      img = img.resize({ width: MAX_DIM, height: MAX_DIM, fit: 'inside', withoutEnlargement: true });
-    }
-    const hasAlpha = meta.hasAlpha;
-    if (origExt === '.png' && hasAlpha) {
+    if (keepPng) {
       await img.png({ compressionLevel: 9 }).toFile(abs);
-      filename = path.basename(abs);
     } else {
-      const jpgAbs = abs.replace(/\.png$/, '.jpg');
-      await img.flatten({ background: '#ffffff' }).jpeg({ quality: 86, progressive: true, mozjpeg: true }).toFile(jpgAbs);
-      filename = path.basename(jpgAbs);
+      await img.flatten({ background: '#ffffff' }).jpeg({ quality: 86, progressive: true, mozjpeg: true }).toFile(abs);
     }
 
     const relSrc = `img/${filename}`;
@@ -280,7 +341,9 @@ app.post('/api/update-meta', (req, res) => {
     const metaBlock = getMetaBlock(pageHtml);
     if (!metaBlock) return res.status(404).json({ error: 'no project-meta block on this page' });
 
-    const newInner = `\n    <div class="meta-col">${col1 || ''}</div><div class="meta-col">${col2 || ''}</div>\n  `;
+    const html1 = plainTextToHtml(col1);
+    const html2 = plainTextToHtml(col2);
+    const newInner = `\n    <div class="meta-col">${html1}</div><div class="meta-col">${html2}</div>\n  `;
     const newPageHtml = pageHtml.slice(0, metaBlock.openEnd) + newInner + pageHtml.slice(metaBlock.closeStart);
     const newHtml = html.slice(0, block.pageOpenEnd) + newPageHtml + html.slice(block.pageCloseStart);
     fs.writeFileSync(INDEX_PATH, newHtml);
@@ -291,9 +354,99 @@ app.post('/api/update-meta', (req, res) => {
   }
 });
 
+// ───────────────────────────────── API: reorder home-feed project thumbnails ────────────────
+app.post('/api/reorder-home', (req, res) => {
+  try {
+    const { order } = req.body;
+    if (!Array.isArray(order)) return res.status(400).json({ error: 'missing order' });
+
+    const html = fs.readFileSync(INDEX_PATH, 'utf8');
+    const feedBlock = getProjectsFeedBlock(html);
+    if (!feedBlock) return res.status(404).json({ error: 'projects-feed not found' });
+
+    const items = extractHomeItems(html);
+    if (order.length !== items.length) return res.status(400).json({ error: 'order length mismatch — reload and try again' });
+    const reordered = order.map(i => items[i]);
+    if (reordered.some(it => !it)) return res.status(400).json({ error: 'invalid order' });
+
+    const newInner = '\n\n    ' + reordered.map(it => it.html).join(`\n    ${HOME_SPACER}\n\n    `) + `\n    ${HOME_SPACER}\n\n  `;
+    const newHtml = html.slice(0, feedBlock.openEnd) + newInner + html.slice(feedBlock.closeStart);
+    fs.writeFileSync(INDEX_PATH, newHtml);
+    res.json({ ok: true });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: String(e) });
+  }
+});
+
+// ───────────────────────────────── API: add a brand-new project ─────────────────────────────
+app.post('/api/add-project', upload.single('image'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'no image' });
+
+    const html = fs.readFileSync(INDEX_PATH, 'utf8');
+    const pageId = nextProjectId(html);
+
+    const base = path.basename(req.file.originalname, path.extname(req.file.originalname))
+      .replace(/[^a-zA-Z0-9_-]/g, '_') || 'img';
+    const { img, keepPng } = await processUpload(req.file.buffer);
+    const wantExt = keepPng ? '.png' : '.jpg';
+    let filename = `${base}${wantExt}`;
+    let counter = 1;
+    while (fs.existsSync(path.join(ROOT, 'img', filename))) {
+      filename = `${base}-${counter}${wantExt}`;
+      counter++;
+    }
+    const abs = path.join(ROOT, 'img', filename);
+    if (keepPng) {
+      await img.png({ compressionLevel: 9 }).toFile(abs);
+    } else {
+      await img.flatten({ background: '#ffffff' }).jpeg({ quality: 86, progressive: true, mozjpeg: true }).toFile(abs);
+    }
+    const relSrc = `img/${filename}`;
+
+    // 1) new project page, inserted right before the Pics page so it sits among the others
+    const pageHtml = `
+<div id="${pageId}" class="page">
+  <div class="slideshow" data-count="1">
+    <div class="slide-track">
+    <img src="${relSrc}" alt="">
+    </div>
+    <button class="slide-arrow prev" onclick="stepSlide(-1)">&#8249;</button>
+    <button class="slide-arrow next" onclick="stepSlide(1)">&#8250;</button>
+  </div>
+  <div class="project-meta">
+    <div class="meta-col"></div><div class="meta-col"></div>
+  </div>
+  <div class="bottom-nav">
+    <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
+    <div class="footer-arrow">↓</div>
+    <a onclick="showPicsSlideshow()">Pics</a>
+  </div>
+</div>
+`;
+    const picsIdx = html.indexOf('<div id="page-pics" class="page">');
+    if (picsIdx === -1) return res.status(500).json({ error: 'page-pics anchor not found' });
+    let newHtml = html.slice(0, picsIdx) + pageHtml.replace(/^\n/, '') + '\n' + html.slice(picsIdx);
+
+    // 2) new thumbnail appended to the home feed
+    const feedBlock = getProjectsFeedBlock(newHtml);
+    if (!feedBlock) return res.status(500).json({ error: 'projects-feed not found' });
+    const itemHtml = `<div class="project-item" onclick="showProject('${pageId}')">\n      <img src="${relSrc}" alt="" style="width:26vw;max-width:470px;" loading="lazy">\n    </div>`;
+    const insertion = `\n    ${itemHtml}\n    ${HOME_SPACER}\n`;
+    newHtml = newHtml.slice(0, feedBlock.closeStart) + insertion + newHtml.slice(feedBlock.closeStart);
+
+    fs.writeFileSync(INDEX_PATH, newHtml);
+    res.json({ ok: true, pageId, src: relSrc });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: String(e) });
+  }
+});
+
 // ───────────────────────────────── API: publish (git add/commit/push) ───────────────────────
 app.post('/api/publish', (req, res) => {
-  const message = (req.body && req.body.message) || 'Update images via admin tool';
+  const message = (req.body && req.body.message) || 'Update site via admin tool';
   const run = (cmd, args) => new Promise((resolve, reject) => {
     execFile(cmd, args, { cwd: ROOT }, (err, stdout, stderr) => {
       if (err) reject(new Error(stderr || stdout || err.message));
@@ -327,3 +480,4 @@ app.listen(PORT, () => {
   console.log(`Aaron Amend site running on port ${PORT}`);
   console.log(`Admin tool: http://localhost:${PORT}/admin`);
 });
+
