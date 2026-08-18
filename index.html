@@ -879,24 +879,45 @@
       dir.position.set(4, 2, 5);
       globeScene.add(dir);
 
-      /* photo markers scattered evenly over the globe (Fibonacci sphere) */
+      /* lat/lon -> point on unit sphere (standard equirectangular mapping) */
+      function latLonToVector3(lat, lon, radius) {
+        const phi = (90 - lat) * (Math.PI / 180);
+        const theta = (lon + 180) * (Math.PI / 180);
+        return new THREE.Vector3(
+          -radius * Math.sin(phi) * Math.cos(theta),
+           radius * Math.cos(phi),
+           radius * Math.sin(phi) * Math.sin(theta)
+        );
+      }
+
+      /* photo markers: real GPS location where known (from EXIF), grouped into
+         small grid clusters when several photos share a location; photos
+         without GPS data fall back to an even Fibonacci-sphere spread. */
       const markers = [];
-      fetch('assets/pics.json').then(r => r.json()).then(pairs => {
+      const BASE_SCALE = 0.016;
+      const CLUSTER_SPACING = 0.045;
+      fetch('assets/pics.json').then(r => r.json()).then(items => {
         const loader = new THREE.TextureLoader();
-        const N = pairs.length;
-        const golden = Math.PI * (3 - Math.sqrt(5));
-        pairs.forEach(([thumb, full], i) => {
-          const y = 1 - (i / (N - 1)) * 2;
-          const radiusAtY = Math.sqrt(Math.max(0, 1 - y * y));
-          const theta = golden * i;
-          const x = Math.cos(theta) * radiusAtY;
-          const z = Math.sin(theta) * radiusAtY;
-          const ptex = loader.load('img/pics-thumb/' + encodeURIComponent(thumb));
+        items.forEach(it => {
+          let base;
+          if (it.lat !== null && it.lat !== undefined) {
+            base = latLonToVector3(it.lat, it.lon, 1);
+            const up = new THREE.Vector3(0, 1, 0);
+            let east = new THREE.Vector3().crossVectors(up, base);
+            if (east.lengthSq() < 1e-6) east.set(1, 0, 0); else east.normalize();
+            const north = new THREE.Vector3().crossVectors(base, east).normalize();
+            base.addScaledVector(east, (it.ox || 0) * CLUSTER_SPACING);
+            base.addScaledVector(north, (it.oy || 0) * CLUSTER_SPACING);
+            base.normalize();
+          } else {
+            base = new THREE.Vector3(it.gx, it.gy, it.gz).normalize();
+          }
+          const ptex = loader.load('img/pics-thumb/' + encodeURIComponent(it.thumb));
           const pmat = new THREE.SpriteMaterial({ map: ptex, transparent: true });
           const sprite = new THREE.Sprite(pmat);
-          sprite.position.set(x * 1.045, y * 1.045, z * 1.045);
-          sprite.scale.set(0.09, 0.09, 1);
-          sprite.userData.full = full;
+          sprite.position.copy(base).multiplyScalar(1.045);
+          sprite.scale.set(BASE_SCALE, BASE_SCALE, 1);
+          sprite.userData.full = it.full;
           globeMesh.add(sprite);
           markers.push(sprite);
         });
@@ -935,6 +956,37 @@
       });
       wrap.addEventListener('pointerleave',() => dragging = false);
 
+      /* ── Zoom: closer = bigger photos ── */
+      const ZMIN = 1.12, ZMAX = 2.6;
+      let zoomTarget = 2.6, zoomCur = 2.6;
+      const MAX_SCALE = 0.15;
+
+      wrap.addEventListener('wheel', e => {
+        e.preventDefault();
+        zoomTarget = Math.min(ZMAX, Math.max(ZMIN, zoomTarget + e.deltaY * 0.0016));
+      }, { passive: false });
+
+      let pinchStartDist = null, pinchStartZoom = null;
+      wrap.addEventListener('touchstart', e => {
+        if (e.touches.length === 2) {
+          pinchStartDist = Math.hypot(
+            e.touches[0].clientX - e.touches[1].clientX,
+            e.touches[0].clientY - e.touches[1].clientY
+          );
+          pinchStartZoom = zoomTarget;
+        }
+      }, { passive: true });
+      wrap.addEventListener('touchmove', e => {
+        if (e.touches.length === 2 && pinchStartDist) {
+          const d = Math.hypot(
+            e.touches[0].clientX - e.touches[1].clientX,
+            e.touches[0].clientY - e.touches[1].clientY
+          );
+          zoomTarget = Math.min(ZMAX, Math.max(ZMIN, pinchStartZoom * (pinchStartDist / d)));
+        }
+      }, { passive: true });
+      wrap.addEventListener('touchend', e => { if (e.touches.length < 2) pinchStartDist = null; });
+
       function animate() {
         requestAnimationFrame(animate);
         if (!dragging) {
@@ -943,6 +995,14 @@
           velY *= 0.94;
           if (Math.abs(velX) > 0.0025) velX *= 0.94;
         }
+
+        zoomCur += (zoomTarget - zoomCur) * 0.08;
+        globeCamera.position.z = zoomCur;
+
+        const t = Math.max(0, 1 - (zoomCur - ZMIN) / (ZMAX - ZMIN));
+        const s = BASE_SCALE + (MAX_SCALE - BASE_SCALE) * Math.pow(t, 1.4);
+        for (let i = 0; i < markers.length; i++) markers[i].scale.set(s, s, 1);
+
         globeRenderer.render(globeScene, globeCamera);
       }
       animate();
