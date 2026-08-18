@@ -118,23 +118,27 @@
     font-size: clamp(2.4rem, 4.6vw, 5.4rem);
     font-weight: 400;
     letter-spacing: 0.02em;
-    color: rgba(0,0,0,0.85);
+    color: #fff;
+    mix-blend-mode: difference;
     text-align: center;
     margin-bottom: 8vh;
   }
 
-  /* ── CIRCLE BACKDROP: sits behind the project images, drifts down as you
-     scroll but at a fraction of the scroll speed (see the parallax script
-     at the bottom of the page) ── */
+  /* ── CIRCLE BACKDROP: hidden above the screen on load, slides down as you
+     scroll -- timed (in JS) so it exits the bottom edge exactly when you
+     reach the footer, never before. Position is fully driven by the JS
+     transform below; `top: 0` is just the reference line it measures from.
+     h1 above uses mix-blend-mode so the name reads as a "negative" cutout
+     wherever the circle passes behind it. ── */
   #circle-backdrop {
     position: fixed;
-    top: 38vh;
+    top: 0;
     left: 50%;
     width: min(58vw, 760px);
     height: min(58vw, 760px);
     border-radius: 50%;
     background: #0a0a0a;
-    transform: translate(-50%, 0);
+    transform: translate(-50%, -100vh);
     z-index: -1;
     pointer-events: none;
     opacity: 0;
@@ -1357,20 +1361,25 @@
   document.querySelectorAll('.project-item').forEach(el => io.observe(el));
 
   /* ── Circle backdrop parallax ──
-     The circle is fixed to the viewport (so it never natively scrolls),
-     then we nudge it down by a fraction of the scroll distance -- it
-     ends up drifting downward slower than the images scrolling past it,
-     the classic "background layer lags behind foreground" parallax read. */
+     Starts fully hidden above the top edge of the screen. As you scroll,
+     it slides down -- timed against the *entire* scrollable height of the
+     home feed, so its top edge crosses the bottom edge of the screen at
+     exactly the same moment scrollY hits its maximum (i.e. right as the
+     footer comes into view), never before. */
   const circleBackdrop = document.getElementById('circle-backdrop');
-  const PARALLAX_SPEED = 0.35; // fraction of scroll speed the circle moves at
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   let parallaxTicking = false;
 
   function updateCircleParallax() {
     parallaxTicking = false;
     if (currentPage !== 'home' || !circleBackdrop) return;
-    const y = reduceMotion ? 0 : window.scrollY * PARALLAX_SPEED;
-    circleBackdrop.style.transform = 'translate(-50%, ' + y.toFixed(1) + 'px)';
+    const vh = window.innerHeight;
+    const diameter = circleBackdrop.offsetHeight;
+    const maxScroll = Math.max(1, document.body.scrollHeight - vh);
+    const progress = reduceMotion ? 0 : Math.min(1, Math.max(0, window.scrollY / maxScroll));
+    // top edge goes from -diameter (fully hidden above) to vh (fully hidden below)
+    const top = -diameter + progress * (vh + diameter);
+    circleBackdrop.style.transform = 'translate(-50%, ' + top.toFixed(1) + 'px)';
   }
 
   window.addEventListener('scroll', () => {
@@ -1378,6 +1387,7 @@
   }, { passive: true });
 
   window.addEventListener('resize', updateCircleParallax);
+  window.addEventListener('load', updateCircleParallax);
 
   /* fade the circle in once on load, then keep it in sync whenever home
      becomes the active page again */
