@@ -114,22 +114,41 @@
     padding-top: 22vh;
   }
 
+  /* Name: two identical <h1>s stacked exactly on top of each other.
+     .name-base is always fully rendered (dark on white) -- it never
+     disappears, full stop. .name-invert is a white copy of the exact same
+     text, clipped (via clip-path, kept in sync with the circle's position
+     every animation frame in JS) to a circle matching the black backdrop
+     -- so it only shows, in white, in the precise region where the circle
+     currently overlaps the name. No blend-mode trickery, so it holds up
+     at any zoom level. */
+  .name-wrap {
+    position: relative;
+    margin-bottom: 8vh;
+  }
+
   #home h1 {
     font-size: clamp(2.4rem, 4.6vw, 5.4rem);
     font-weight: 400;
     letter-spacing: 0.02em;
-    color: #fff;
-    mix-blend-mode: difference;
     text-align: center;
-    margin-bottom: 8vh;
+    margin: 0;
+  }
+
+  .name-base { color: rgba(0,0,0,0.88); }
+
+  .name-invert {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    color: #fff;
+    clip-path: circle(0px at 50% 0%);
+    pointer-events: none;
   }
 
   /* ── CIRCLE BACKDROP: hidden above the screen on load, slides down as you
      scroll -- timed (in JS) so it exits the bottom edge exactly when you
      reach the footer, never before. Position is fully driven by the JS
-     transform below; `top: 0` is just the reference line it measures from.
-     h1 above uses mix-blend-mode so the name reads as a "negative" cutout
-     wherever the circle passes behind it. ── */
+     transform below; `top: 0` is just the reference line it measures from. ── */
   #circle-backdrop {
     position: fixed;
     top: 0;
@@ -223,6 +242,9 @@
 
   #page-globe { background: #0a0a0a; }
   body.globe-active nav a { color: #fff; }
+
+  #page-pics { background: #0a0a0a; }
+  body.pics-active nav a { color: #fff; }
 
   .page.active { display: flex; flex-direction: column; }
 
@@ -426,7 +448,10 @@
 <!-- HOME -->
 <div id="home">
   <div id="circle-backdrop" aria-hidden="true"></div>
-  <h1>Aaron Amend</h1>
+  <div class="name-wrap">
+    <h1 class="name-base">Aaron Amend</h1>
+    <h1 class="name-invert" aria-hidden="true">Aaron Amend</h1>
+  </div>
 
   <div class="projects-feed">
 
@@ -549,7 +574,7 @@
     <div class="slide-track">
     <img src="img/paython-drawing-2.jpg" alt="">
     <img src="img/paythd2.jpg" alt="">
-    <img src="img/pyth3.png" alt="">
+    <img src="img/pyth3.jpg" alt="">
     </div>
     <button class="slide-arrow prev" onclick="stepSlide(-1)">&#8249;</button>
     <button class="slide-arrow next" onclick="stepSlide(1)">&#8250;</button>
@@ -598,8 +623,8 @@
     <div class="slide-track">
     <img src="img/abbruch.jpg" alt="">
     <img src="img/done.jpg" alt="">
-    <img src="img/Axo2.png" alt="">
-    <img src="img/Axo1.png" alt="">
+    <img src="img/Axo2.jpg" alt="">
+    <img src="img/Axo1.jpg" alt="">
     <img src="img/section.jpg" alt="">
     <img src="img/Chartreuse-3-pics.jpg" alt="">
     </div>
@@ -619,7 +644,7 @@
     <img src="img/Endprasentation_verschoben_3.png" alt="">
     <img src="img/Endprasentation_verschoben_7.png" alt="">
     <img src="img/Endprasentation_verschoben_4.png" alt="">
-    <img src="img/Endprasentation_verschoben_6.png" alt="">
+    <img src="img/Endprasentation_verschoben_6.jpg" alt="">
     <img src="img/Endprasentation_verschoben.png" alt="">
     <img src="img/Endprasentation_verschoben_2.png" alt="">
     <img src="img/Endprasentation_verschoben_5.png" alt="">
@@ -641,9 +666,9 @@
   <div class="slideshow" data-count="6">
     <div class="slide-track">
     <img src="img/gifquick.gif" alt="">
-    <img src="img/martel2.png" alt="">
-    <img src="img/martel1.png" alt="">
-    <img src="img/martel.png" alt="">
+    <img src="img/martel2.jpg" alt="">
+    <img src="img/martel1.jpg" alt="">
+    <img src="img/martel.jpg" alt="">
     <img src="img/pic.jpg" alt="">
     <img src="img/pic3.jpg" alt="">
     </div>
@@ -728,7 +753,7 @@
     <img src="img/st_24_2.jpeg" alt="">
     <img src="img/333.jpeg" alt="">
     <img src="img/st_24_5.jpeg" alt="">
-    <img src="img/3334.png" alt="">
+    <img src="img/3334.jpg" alt="">
     <img src="img/st_24_1.jpeg" alt="">
     <img src="img/st_24_7.jpeg" alt="">
     <img src="img/st_24_4.jpeg" alt="">
@@ -779,7 +804,7 @@
     <div class="slide-track">
     <img src="img/portfolio_aaron_amend_verschoben.png" alt="">
     <img src="img/PerspektiveAu_en_3KM.png" alt="">
-    <img src="img/Bildschirmfoto-2022-12-05-um-13.28.33.png" alt="">
+    <img src="img/Bildschirmfoto-2022-12-05-um-13.28.33.jpg" alt="">
     <img src="img/faltung.png" alt="">
     <img src="img/grundrissclean.png" alt="">
     <img src="img/fassadenschnitt.png" alt="">
@@ -871,6 +896,7 @@
   function showCV() {
     hideHome();
     document.body.classList.remove('globe-active');
+    document.body.classList.remove('pics-active');
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     cvPage.classList.add('active');
     document.getElementById('cv-footer').style.display = 'flex';
@@ -884,6 +910,7 @@
   function showProject(id) {
     hideHome();
     document.body.classList.remove('globe-active');
+    document.body.classList.remove('pics-active');
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     cvPage.classList.remove('active');
     document.getElementById('cv-footer').style.display = 'none';
@@ -901,6 +928,7 @@
 
   function goHome() {
     document.body.classList.remove('globe-active');
+    document.body.classList.remove('pics-active');
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     cvPage.classList.remove('active');
     document.getElementById('cv-footer').style.display = 'none';
@@ -940,6 +968,7 @@
   function showPicsSlideshow() {
     hideHome();
     document.body.classList.remove('globe-active');
+    document.body.classList.add('pics-active');
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     cvPage.classList.remove('active');
     document.getElementById('cv-footer').style.display = 'none';
@@ -1367,6 +1396,8 @@
      exactly the same moment scrollY hits its maximum (i.e. right as the
      footer comes into view), never before. */
   const circleBackdrop = document.getElementById('circle-backdrop');
+  const nameInvert = document.querySelector('.name-invert');
+  const nameWrap = document.querySelector('.name-wrap');
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   let parallaxTicking = false;
 
@@ -1380,6 +1411,19 @@
     // top edge goes from -diameter (fully hidden above) to vh (fully hidden below)
     const top = -diameter + progress * (vh + diameter);
     circleBackdrop.style.transform = 'translate(-50%, ' + top.toFixed(1) + 'px)';
+
+    // Keep the white "negative" name-copy's clip circle locked to the
+    // black circle's actual on-screen position/size, every frame -- the
+    // base black name underneath is never touched, so it can never vanish.
+    if (nameInvert && nameWrap) {
+      const wrapRect = nameWrap.getBoundingClientRect();
+      const circleCenterX = window.innerWidth / 2;
+      const circleCenterY = top + diameter / 2;
+      const cx = circleCenterX - wrapRect.left;
+      const cy = circleCenterY - wrapRect.top;
+      const r = diameter / 2;
+      nameInvert.style.clipPath = 'circle(' + r.toFixed(1) + 'px at ' + cx.toFixed(1) + 'px ' + cy.toFixed(1) + 'px)';
+    }
   }
 
   window.addEventListener('scroll', () => {
