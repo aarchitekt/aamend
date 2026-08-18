@@ -34,9 +34,10 @@
     cursor: url('assets/cursor-hand.png') 12 2, pointer;
   }
 
-  /* CV/about page keeps the speaker-image cursor instead of the hand pointer */
-  #cv-page a, #cv-page button, #cv-footer a, #cv-footer button {
-    cursor: url('assets/cursor-box.png') 24 24, pointer;
+  /* CV/about page: cursor is the speaker image everywhere on the page, not the hand pointer */
+  #cv-page, #cv-page a, #cv-page button,
+  #cv-footer, #cv-footer a, #cv-footer button {
+    cursor: url('assets/cursor-box.png') 24 24, auto;
   }
 
   body {
@@ -63,8 +64,8 @@
     pointer-events: all;
     text-decoration: none;
     color: var(--ink);
-    font-size: 1.375rem;
-    font-weight: 400;
+    font-size: 2.6rem;
+    font-weight: 300;
     opacity: 0.75;
     transition: opacity 0.15s;
     line-height: 1;
