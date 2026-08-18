@@ -884,8 +884,8 @@
   let globeInited = false;
   let globeSvgEl, globeDotsLayer, globeMarkersLayer, globeWrapEl;
   const GLOBE_SIZE = 340;
-  const GLOBE_GRID_STEP = 5.2;
-  const GLOBE_DOT_R = 2.1;
+  const GLOBE_GRID_STEP = 2.9;
+  const GLOBE_DOT_R = 1.1;
   const GLOBE_MIN_VB = GLOBE_SIZE / 14;
   const GLOBE_MAX_VB = GLOBE_SIZE * 1.15;
   let globeViewBox = { x: 0, y: 0, w: GLOBE_SIZE, h: GLOBE_SIZE };
@@ -954,6 +954,18 @@
       .translate([GLOBE_SIZE / 2, GLOBE_SIZE / 2])
       .rotate(globeRotation)
       .clipAngle(90);
+  }
+
+  /* d3 only clips GeoJSON paths against the visible hemisphere -- a lone
+     point run through the projection still comes back with real x/y even
+     when it is on the far side. Markers need this manual front/back check
+     or the globe looks transparent (photos from the far side showing
+     through onto the front). */
+  function angularDistDeg(lon1, lat1, lon2, lat2) {
+    const r = Math.PI / 180;
+    const p1 = lat1 * r, p2 = lat2 * r;
+    const cosC = Math.sin(p1) * Math.sin(p2) + Math.cos(p1) * Math.cos(p2) * Math.cos((lon2 - lon1) * r);
+    return Math.acos(Math.max(-1, Math.min(1, cosC))) * 180 / Math.PI;
   }
 
   function rebuildGlobeGrid() {
@@ -1040,8 +1052,16 @@
       el.style.display = show ? '' : 'none';
     }
     const zoomScale = globeViewBox.w / GLOBE_SIZE;
-    const size = GLOBE_DOT_R * 2.8 * zoomScale;
+    // Grows the closer you zoom in (opposite of the land-dot grid, which
+    // stays a constant physical size) -- clamped so it never balloons into
+    // an oversized blob at the deepest zoom level.
+    const size = Math.min(30, GLOBE_DOT_R * 3.4 * Math.pow(1 / zoomScale, 0.62));
+    const centerLon = -globeRotation[0], centerLat = -globeRotation[1];
     globeMarkerData.forEach(m => {
+      if (angularDistDeg(m.lon, m.lat, centerLon, centerLat) > 89) {
+        m.el.style.display = 'none';
+        return;
+      }
       const p = proj([m.lon, m.lat]);
       if (!p) { m.el.style.display = 'none'; return; }
       const [sx, sy] = nearestGridPoint(p[0], p[1]);
@@ -1053,9 +1073,32 @@
     });
   }
 
-  function zoomGlobeBy(factor) {
+  // Converts a client-space (viewport pixel) point into the current
+  // viewBox's own coordinate space, so zoom can anchor on exactly the
+  // point under the cursor/pinch instead of always snapping back to the
+  // globe's center (which is what made zooming feel like it was cropping
+  // into a fixed square rather than homing in on what you pointed at).
+  function clientToSvgPoint(clientX, clientY) {
+    const rect = globeSvgEl.getBoundingClientRect();
+    const px = (clientX - rect.left) / rect.width;
+    const py = (clientY - rect.top) / rect.height;
+    return [globeViewBox.x + px * globeViewBox.w, globeViewBox.y + py * globeViewBox.h];
+  }
+
+  function zoomGlobeBy(factor, anchorClientX, anchorClientY) {
+    const [ax, ay] = (anchorClientX != null)
+      ? clientToSvgPoint(anchorClientX, anchorClientY)
+      : [globeViewBox.x + globeViewBox.w / 2, globeViewBox.y + globeViewBox.h / 2];
     const newW = Math.max(GLOBE_MIN_VB, Math.min(GLOBE_MAX_VB, globeViewBox.w * factor));
-    const cx = globeViewBox.x + globeViewBox.w / 2, cy = globeViewBox.y + globeViewBox.h / 2;
+    const ratio = newW / globeViewBox.w;
+    let nextX = ax - (ax - globeViewBox.x) * ratio;
+    let nextY = ay - (ay - globeViewBox.y) * ratio;
+    // Keep the crop from drifting off the globe entirely after many
+    // zoom-toward-the-edge steps -- clamp its center to stay within a
+    // sane distance of the true globe center, same idea as Memori's fix.
+    const maxDrift = (GLOBE_MAX_VB - newW) / 2 + GLOBE_SIZE * 0.12;
+    const cx = Math.max(GLOBE_SIZE / 2 - maxDrift, Math.min(GLOBE_SIZE / 2 + maxDrift, nextX + newW / 2));
+    const cy = Math.max(GLOBE_SIZE / 2 - maxDrift, Math.min(GLOBE_SIZE / 2 + maxDrift, nextY + newW / 2));
     globeViewBox = { x: cx - newW / 2, y: cy - newW / 2, w: newW, h: newW };
     applyGlobeVB();
     const zoomScale = newW / GLOBE_SIZE;
@@ -1108,16 +1151,18 @@
 
     wrap.addEventListener('wheel', e => {
       e.preventDefault();
-      zoomGlobeBy(Math.exp(e.deltaY * 0.0016));
+      zoomGlobeBy(Math.exp(e.deltaY * 0.0016), e.clientX, e.clientY);
     }, { passive: false });
 
-    let pinchDist = null;
+    let pinchDist = null, pinchMidX = 0, pinchMidY = 0;
     wrap.addEventListener('touchstart', e => {
       if (e.touches.length === 2) {
         pinchDist = Math.hypot(
           e.touches[0].clientX - e.touches[1].clientX,
           e.touches[0].clientY - e.touches[1].clientY
         );
+        pinchMidX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+        pinchMidY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
       }
     }, { passive: true });
     wrap.addEventListener('touchmove', e => {
@@ -1126,7 +1171,9 @@
           e.touches[0].clientX - e.touches[1].clientX,
           e.touches[0].clientY - e.touches[1].clientY
         );
-        zoomGlobeBy(pinchDist / d);
+        pinchMidX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+        pinchMidY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+        zoomGlobeBy(pinchDist / d, pinchMidX, pinchMidY);
         pinchDist = d;
       }
     }, { passive: true });
