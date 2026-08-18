@@ -1110,7 +1110,13 @@
 
   function wireGlobeInteraction() {
     const wrap = globeWrapEl;
-    let dragging = false, lastX = 0, lastY = 0, velX = 0.1, velY = 0, downX = 0, downY = 0;
+    // No idle auto-spin -- the globe only turns while dragging, plus a
+    // short momentum decay right after a drag ends. momentumRunning makes
+    // sure the rAF loop actually stops (and the ~3-4k dot elements stop
+    // being redrawn every frame) once that momentum has settled, instead
+    // of looping forever in the background.
+    let dragging = false, lastX = 0, lastY = 0, velX = 0, velY = 0, downX = 0, downY = 0;
+    let momentumRunning = false;
 
     function pxToDeg(px) {
       const rect = globeSvgEl.getBoundingClientRect();
@@ -1122,6 +1128,7 @@
     wrap.addEventListener('pointerdown', e => {
       dragging = true; lastX = e.clientX; lastY = e.clientY;
       downX = e.clientX; downY = e.clientY;
+      velX = 0; velY = 0;
       wrap.setPointerCapture(e.pointerId);
     });
     wrap.addEventListener('pointermove', e => {
@@ -1134,20 +1141,28 @@
       velX = dDeg * 0.18; velY = dDegY * 0.18;
       drawGlobe();
     });
-    wrap.addEventListener('pointerup', e => { dragging = false; });
-    wrap.addEventListener('pointerleave', () => dragging = false);
-
-    function tick() {
-      requestAnimationFrame(tick);
-      if (!dragging && currentPage === 'page-globe') {
-        globeRotation[0] += velX || 0.1;
-        globeRotation[1] = Math.max(-90, Math.min(90, globeRotation[1] - velY));
-        velY *= 0.94;
-        if (Math.abs(velX) > 0.1) velX *= 0.94;
-        drawGlobe();
+    function endDrag() {
+      dragging = false;
+      if (!momentumRunning && (Math.abs(velX) > 0.03 || Math.abs(velY) > 0.03)) {
+        momentumRunning = true;
+        requestAnimationFrame(momentumTick);
       }
     }
-    requestAnimationFrame(tick);
+    wrap.addEventListener('pointerup', endDrag);
+    wrap.addEventListener('pointerleave', endDrag);
+
+    function momentumTick() {
+      if (dragging) { momentumRunning = false; return; }
+      globeRotation[0] += velX;
+      globeRotation[1] = Math.max(-90, Math.min(90, globeRotation[1] - velY));
+      velX *= 0.9; velY *= 0.9;
+      drawGlobe();
+      if (Math.abs(velX) > 0.03 || Math.abs(velY) > 0.03) {
+        requestAnimationFrame(momentumTick);
+      } else {
+        momentumRunning = false;
+      }
+    }
 
     wrap.addEventListener('wheel', e => {
       e.preventDefault();
