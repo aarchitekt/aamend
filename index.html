@@ -246,15 +246,22 @@
   #page-pics { background: #0a0a0a; }
   body.pics-active nav a { color: #fff; }
 
-  /* ── Pics: split-flap metadata board under the slideshow ── */
+  /* ── Pics: split-flap metadata board, overlaid near the bottom of the
+     photo itself so it's visible immediately -- no scrolling needed. ── */
   .pics-meta {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 5%;
+    z-index: 5;
     display: flex;
     justify-content: center;
     align-items: center;
     flex-wrap: wrap;
     gap: 0.16rem;
-    padding: 0.9rem 1rem 0;
+    padding: 0.6rem 1rem;
     min-height: 1.9rem;
+    pointer-events: none;
     user-select: none;
   }
 
@@ -268,9 +275,9 @@
     font-size: 0.78rem;
     letter-spacing: 0;
     text-transform: uppercase;
-    color: rgba(255,255,255,0.65);
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.85);
+    background: rgba(0,0,0,0.55);
+    border: 1px solid rgba(255,255,255,0.18);
     border-radius: 2px;
   }
 
@@ -349,6 +356,57 @@
   #pics-slide-track img {
     max-width: 64vw;
     max-height: 64vh;
+  }
+
+  /* ── Pics page on computer screens: show the slideshow cropped into the
+     screen of a real iPhone photo, so it looks like you're browsing the
+     photos on a phone. Phone image + crop percentages are keyed to the
+     device photo's exact pixel geometry (791x1600 source; screen area is
+     the box from 55,140 to 735,1370 within that image). Below the 700px
+     breakpoint (phones) this whole treatment is skipped -- the slideshow
+     just fills the screen as it always did, since on an actual phone
+     you're already looking at the photos "on your phone". ── */
+  #pics-phone-img { display: none; }
+
+  @media (min-width: 701px) {
+    #page-pics {
+      position: relative;
+      --phone-h: min(88vh, 900px);
+      --phone-w: calc(var(--phone-h) * 791 / 1600);
+      --phone-top: max(4vh, 24px);
+      --phone-left: calc(50% - var(--phone-w) / 2);
+    }
+    #pics-phone-img {
+      display: block;
+      position: absolute;
+      left: var(--phone-left);
+      top: var(--phone-top);
+      width: var(--phone-w);
+      height: var(--phone-h);
+      z-index: 1;
+      pointer-events: none;
+      user-select: none;
+    }
+    #page-pics .slideshow {
+      position: absolute;
+      left: calc(var(--phone-left) + var(--phone-w) * 0.06953);
+      top: calc(var(--phone-top) + var(--phone-h) * 0.0875);
+      width: calc(var(--phone-w) * (1 - 0.06953 - 0.07079));
+      height: calc(var(--phone-h) * (1 - 0.0875 - 0.14375));
+      z-index: 2;
+      background: #000;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    #pics-slide-track img {
+      max-width: 100%;
+      max-height: 100%;
+    }
+    #page-pics .bottom-nav {
+      position: relative;
+      z-index: 3;
+      margin-top: calc(var(--phone-top) + var(--phone-h) + 4vh);
+    }
   }
 
   .slide-arrow {
@@ -893,10 +951,11 @@
 </div>
 
 <div id="page-pics" class="page">
+  <img id="pics-phone-img" src="img/iphone-frame.jpg" alt="">
   <div class="slideshow">
     <div class="slide-track" id="pics-slide-track" onclick="stepPicsSlide()"></div>
+    <div id="pics-meta" class="pics-meta" aria-hidden="true"></div>
   </div>
-  <div id="pics-meta" class="pics-meta" aria-hidden="true"></div>
   <div class="bottom-nav">
     <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
     <div class="footer-arrow">↓</div>
@@ -939,18 +998,14 @@
   function showHome() { home.style.display = 'flex'; }
   function hideHome() { home.style.display = 'none'; }
 
-  /* ── Admin access: quiet gate, not real security — just a soft deterrent
-     against casual clicks. The actual admin backend checks its own password
-     server-side before allowing any edit. ── */
+  /* ── Admin access: go straight to the admin tool, which has its own
+     server-side password screen. (Previously there was a second, client-side
+     password prompt here too -- redundant and confusing, since the real
+     check always happens on the server. Removed so there's exactly one
+     password prompt.) ── */
   const ADMIN_URL = 'https://aamend-admin.onrender.com/admin';
   function openAdminGate() {
-    const p = window.prompt('Passwort:');
-    if (p === null) return;
-    if (p === 'Frankfurt1998') {
-      window.location.href = ADMIN_URL;
-    } else {
-      alert('Falsches Passwort.');
-    }
+    window.location.href = ADMIN_URL;
   }
 
   function showCV() {
