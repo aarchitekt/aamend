@@ -10,16 +10,28 @@
 <meta property="og:type" content="website">
 <meta property="og:image" content="img/capella004.jpg">
 <meta name="theme-color" content="#ffffff">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
+  @font-face {
+    font-family: 'Waldenburg';
+    src: url('assets/fonts/Waldenburg-Regular.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'Waldenburg';
+    src: url('assets/fonts/Waldenburg-Bold.woff2') format('woff2');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+  }
+
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
     --black: #1a1a1a;
     --gray: rgba(0,0,0,0.5);
-    --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+    --font: 'Waldenburg', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
     --ink: rgba(0,0,0,0.85);
   }
 
@@ -65,7 +77,7 @@
     text-decoration: none;
     color: var(--ink);
     font-size: 2.6rem;
-    font-weight: 300;
+    font-weight: 400;
     opacity: 0.75;
     transition: opacity 0.15s;
     line-height: 1;
@@ -94,6 +106,7 @@
 
   /* ── HOME ── */
   #home {
+    position: relative;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -104,11 +117,31 @@
   #home h1 {
     font-size: clamp(2.4rem, 4.6vw, 5.4rem);
     font-weight: 400;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.02em;
     color: rgba(0,0,0,0.85);
     text-align: center;
     margin-bottom: 8vh;
   }
+
+  /* ── CIRCLE BACKDROP: sits behind the project images, drifts down as you
+     scroll but at a fraction of the scroll speed (see the parallax script
+     at the bottom of the page) ── */
+  #circle-backdrop {
+    position: fixed;
+    top: 38vh;
+    left: 50%;
+    width: min(58vw, 760px);
+    height: min(58vw, 760px);
+    border-radius: 50%;
+    background: #0a0a0a;
+    transform: translate(-50%, 0);
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+  }
+
+  #home.circle-ready #circle-backdrop { opacity: 1; }
 
   .projects-feed {
     width: 100%;
@@ -173,6 +206,10 @@
     font-size: 1rem;
     line-height: 1;
   }
+
+  /* project-meta is already black -- butt it straight up against the
+     footer instead of leaving a white gap between two black blocks */
+  .project-meta + .bottom-nav { margin-top: 0; padding-top: 3rem; }
 
   /* ── PROJECT PAGE: fullscreen slideshow, one image at a time ── */
   .page {
@@ -276,21 +313,36 @@
 
   .page[data-single="true"] .slide-arrow { display: none; }
 
-  /* ── PROJECT META (2-column info grid below slideshow) ── */
+  /* ── PROJECT META (2-column info block below slideshow) ──
+     Black, full-bleed, same tone as the bottom-nav footer -- every
+     project page reads as "images, then a black block" the way the
+     print portfolio's black title pages do. ── */
   .project-meta {
+    position: relative;
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 2.5rem;
     max-width: 1400px;
     margin: 0 auto;
-    padding: 3rem 2.5rem 6rem;
+    padding: 4rem 2.5rem;
     font-size: 0.95rem;
     line-height: 1.75;
-    color: rgba(0,0,0,0.68);
+    color: rgba(255,255,255,0.6);
     text-align: left;
   }
 
-  .project-meta strong { font-weight: 600; color: rgba(0,0,0,0.9); }
+  .project-meta::before {
+    content: "";
+    position: absolute;
+    top: 0; bottom: 0;
+    left: 50%;
+    width: 100vw;
+    transform: translateX(-50%);
+    background: #0a0a0a;
+    z-index: -1;
+  }
+
+  .project-meta strong { font-weight: 700; color: rgba(255,255,255,0.95); }
 
   @media (max-width: 700px) {
     .project-meta { grid-template-columns: 1fr; gap: 1.25rem; padding: 2rem 1.5rem 4rem; }
@@ -309,7 +361,7 @@
 
   #cv-page h2 {
     font-size: clamp(2rem, 6vw, 4rem);
-    font-weight: 300;
+    font-weight: 400;
     margin-bottom: 5rem;
   }
 
@@ -320,7 +372,7 @@
     margin-bottom: 1.75rem;
   }
 
-  .cv-text strong { font-weight: 600; color: rgba(0,0,0,0.92); }
+  .cv-text strong { font-weight: 700; color: rgba(0,0,0,0.92); }
 
   .cv-section { margin-bottom: 1.75rem; }
 
@@ -369,7 +421,8 @@
 
 <!-- HOME -->
 <div id="home">
-  <h1>AARON AMEND</h1>
+  <div id="circle-backdrop" aria-hidden="true"></div>
+  <h1>Aaron Amend</h1>
 
   <div class="projects-feed">
 
@@ -768,9 +821,7 @@
 
 <div id="page-pics" class="page">
   <div class="slideshow">
-    <div class="slide-track" id="pics-slide-track" onclick="stepPicsSlide(1)"></div>
-    <button class="slide-arrow prev" onclick="event.stopPropagation(); stepPicsSlide(-1)">&#8249;</button>
-    <button class="slide-arrow next" onclick="event.stopPropagation(); stepPicsSlide(1)">&#8250;</button>
+    <div class="slide-track" id="pics-slide-track" onclick="stepPicsSlide()"></div>
   </div>
   <div class="bottom-nav">
     <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
@@ -856,6 +907,7 @@
     window.scrollTo(0, 0);
     arrow.style.display = 'block';
     arrow.style.opacity = '1';
+    if (typeof updateCircleParallax === 'function') updateCircleParallax();
   }
 
   function showGlobe() {
@@ -918,13 +970,12 @@
     });
   }
 
-  function stepPicsSlide(dir) {
+  function stepPicsSlide() {
     if (!picsShuffled || !picsShuffled.length) return;
-    dir = dir || 1;
     const track = document.getElementById('pics-slide-track');
     const slides = track.children;
     slides[picsIdx].classList.remove('active');
-    picsIdx = (picsIdx + dir + slides.length) % slides.length;
+    picsIdx = (picsIdx + 1) % slides.length;
     slides[picsIdx].classList.add('active');
   }
 
@@ -1304,6 +1355,36 @@
     entries.forEach(en => { if (en.isIntersecting) { en.target.classList.add('in-view'); io.unobserve(en.target); } });
   }, { threshold: 0.1 });
   document.querySelectorAll('.project-item').forEach(el => io.observe(el));
+
+  /* ── Circle backdrop parallax ──
+     The circle is fixed to the viewport (so it never natively scrolls),
+     then we nudge it down by a fraction of the scroll distance -- it
+     ends up drifting downward slower than the images scrolling past it,
+     the classic "background layer lags behind foreground" parallax read. */
+  const circleBackdrop = document.getElementById('circle-backdrop');
+  const PARALLAX_SPEED = 0.35; // fraction of scroll speed the circle moves at
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let parallaxTicking = false;
+
+  function updateCircleParallax() {
+    parallaxTicking = false;
+    if (currentPage !== 'home' || !circleBackdrop) return;
+    const y = reduceMotion ? 0 : window.scrollY * PARALLAX_SPEED;
+    circleBackdrop.style.transform = 'translate(-50%, ' + y.toFixed(1) + 'px)';
+  }
+
+  window.addEventListener('scroll', () => {
+    if (!parallaxTicking) { requestAnimationFrame(updateCircleParallax); parallaxTicking = true; }
+  }, { passive: true });
+
+  window.addEventListener('resize', updateCircleParallax);
+
+  /* fade the circle in once on load, then keep it in sync whenever home
+     becomes the active page again */
+  requestAnimationFrame(() => {
+    home.classList.add('circle-ready');
+    updateCircleParallax();
+  });
 </script>
 </body>
 </html>
