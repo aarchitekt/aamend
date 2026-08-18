@@ -30,7 +30,7 @@
     cursor: url('assets/cursor-arrow.svg') 3 0, auto;
   }
 
-  a, .project-item, .slide-arrow, button {
+  a, .project-item, .slide-arrow, button, #page-pics .slide-track {
     cursor: url('assets/cursor-hand.png') 12 2, pointer;
   }
 
@@ -440,7 +440,7 @@
   <div class="bottom-nav">
     <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
     <div class="footer-arrow">↓</div>
-    <a onclick="showGlobe()">Pics</a>
+    <a onclick="showPicsSlideshow()">Pics</a>
   </div>
 </div>
 
@@ -482,7 +482,7 @@
 <div id="cv-footer" class="bottom-nav" style="display:none;width:100vw;margin-left:calc(50% - 50vw);margin-right:calc(50% - 50vw);">
   <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
   <div class="footer-arrow">↓</div>
-  <a onclick="showGlobe()">Pics</a>
+  <a onclick="showPicsSlideshow()">Pics</a>
 </div>
 
 <!-- PROJECT PAGES -->
@@ -500,7 +500,7 @@
   <div class="bottom-nav">
     <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
     <div class="footer-arrow">↓</div>
-    <a onclick="showGlobe()">Pics</a>
+    <a onclick="showPicsSlideshow()">Pics</a>
   </div>
 </div>
 
@@ -532,7 +532,7 @@
   <div class="bottom-nav">
     <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
     <div class="footer-arrow">↓</div>
-    <a onclick="showGlobe()">Pics</a>
+    <a onclick="showPicsSlideshow()">Pics</a>
   </div>
 </div>
 
@@ -552,7 +552,7 @@
   <div class="bottom-nav">
     <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
     <div class="footer-arrow">↓</div>
-    <a onclick="showGlobe()">Pics</a>
+    <a onclick="showPicsSlideshow()">Pics</a>
   </div>
 </div>
 
@@ -576,7 +576,7 @@
   <div class="bottom-nav">
     <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
     <div class="footer-arrow">↓</div>
-    <a onclick="showGlobe()">Pics</a>
+    <a onclick="showPicsSlideshow()">Pics</a>
   </div>
 </div>
 
@@ -599,7 +599,7 @@
   <div class="bottom-nav">
     <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
     <div class="footer-arrow">↓</div>
-    <a onclick="showGlobe()">Pics</a>
+    <a onclick="showPicsSlideshow()">Pics</a>
   </div>
 </div>
 
@@ -620,7 +620,7 @@
   <div class="bottom-nav">
     <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
     <div class="footer-arrow">↓</div>
-    <a onclick="showGlobe()">Pics</a>
+    <a onclick="showPicsSlideshow()">Pics</a>
   </div>
 </div>
 
@@ -659,7 +659,7 @@
   <div class="bottom-nav">
     <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
     <div class="footer-arrow">↓</div>
-    <a onclick="showGlobe()">Pics</a>
+    <a onclick="showPicsSlideshow()">Pics</a>
   </div>
 </div>
 
@@ -685,7 +685,7 @@
   <div class="bottom-nav">
     <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
     <div class="footer-arrow">↓</div>
-    <a onclick="showGlobe()">Pics</a>
+    <a onclick="showPicsSlideshow()">Pics</a>
   </div>
 </div>
 
@@ -713,7 +713,7 @@
   <div class="bottom-nav">
     <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
     <div class="footer-arrow">↓</div>
-    <a onclick="showGlobe()">Pics</a>
+    <a onclick="showPicsSlideshow()">Pics</a>
   </div>
 </div>
 
@@ -737,7 +737,7 @@
   <div class="bottom-nav">
     <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
     <div class="footer-arrow">↓</div>
-    <a onclick="showGlobe()">Pics</a>
+    <a onclick="showPicsSlideshow()">Pics</a>
   </div>
 </div>
 
@@ -762,7 +762,18 @@
   <div class="bottom-nav">
     <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
     <div class="footer-arrow">↓</div>
-    <a onclick="showGlobe()">Pics</a>
+    <a onclick="showPicsSlideshow()">Pics</a>
+  </div>
+</div>
+
+<div id="page-pics" class="page">
+  <div class="slideshow">
+    <div class="slide-track" id="pics-slide-track" onclick="stepPicsSlide()"></div>
+  </div>
+  <div class="bottom-nav">
+    <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
+    <div class="footer-arrow">↓</div>
+    <a onclick="showPicsSlideshow()">Pics</a>
   </div>
 </div>
 
@@ -776,7 +787,7 @@
   <div class="bottom-nav">
     <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
     <div class="footer-arrow">↓</div>
-    <a onclick="showGlobe()">Pics</a>
+    <a onclick="showPicsSlideshow()">Pics</a>
   </div>
 </div>
 
@@ -859,6 +870,59 @@
     currentPage = 'page-globe';
     arrow.style.display = 'none';
     initGlobe();
+  }
+
+  /* ── Pics: simple fullscreen slideshow, random order, click the image to
+     advance. The globe view above is kept around (unlinked) in case it's
+     wanted again later -- showGlobe() still works if a Pics link is ever
+     pointed back at it. ── */
+  let picsShuffled = null;
+  let picsIdx = 0;
+
+  function showPicsSlideshow() {
+    hideHome();
+    document.body.classList.remove('globe-active');
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    cvPage.classList.remove('active');
+    document.getElementById('cv-footer').style.display = 'none';
+    const page = document.getElementById('page-pics');
+    page.classList.add('active');
+    navBack.style.display = 'block';
+    navCV.style.display   = 'block';
+    window.scrollTo(0, 0);
+    currentPage = 'page-pics';
+    arrow.style.display = 'none';
+    initPicsSlideshow();
+  }
+
+  function initPicsSlideshow() {
+    fetch('assets/pics.json').then(r => r.json()).then(items => {
+      picsShuffled = items.slice();
+      for (let i = picsShuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const tmp = picsShuffled[i]; picsShuffled[i] = picsShuffled[j]; picsShuffled[j] = tmp;
+      }
+      picsIdx = 0;
+      const track = document.getElementById('pics-slide-track');
+      track.innerHTML = '';
+      picsShuffled.forEach((it, i) => {
+        const img = document.createElement('img');
+        img.src = 'img/pics/' + encodeURIComponent(it.full);
+        img.loading = i === 0 ? 'eager' : 'lazy';
+        img.alt = '';
+        if (i === 0) img.classList.add('active');
+        track.appendChild(img);
+      });
+    });
+  }
+
+  function stepPicsSlide() {
+    if (!picsShuffled || !picsShuffled.length) return;
+    const track = document.getElementById('pics-slide-track');
+    const slides = track.children;
+    slides[picsIdx].classList.remove('active');
+    picsIdx = (picsIdx + 1) % slides.length;
+    slides[picsIdx].classList.add('active');
   }
 
   function openPicsLightbox(filename) {
