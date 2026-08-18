@@ -444,9 +444,9 @@
 <body>
 
 <nav>
+  <a id="nav-admin" onclick="openAdminGate()">−</a>
   <a id="nav-back" onclick="goHome()" style="display:none">−</a>
   <div style="flex:1"></div>
-  <a id="nav-admin" onclick="openAdminGate()" style="margin-right:1.2rem;font-size:1.6rem;opacity:0.35" title="">−</a>
   <a id="nav-cv" onclick="showCV()">+</a>
 </nav>
 
@@ -897,10 +897,11 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 <script src="assets/topojson-client.min.js"></script>
 <script>
-  const home    = document.getElementById('home');
-  const cvPage  = document.getElementById('cv-page');
-  const navBack = document.getElementById('nav-back');
-  const navCV   = document.getElementById('nav-cv');
+  const home     = document.getElementById('home');
+  const cvPage   = document.getElementById('cv-page');
+  const navBack  = document.getElementById('nav-back');
+  const navAdmin = document.getElementById('nav-admin');
+  const navCV    = document.getElementById('nav-cv');
   const arrow   = document.getElementById('scroll-arrow');
   let currentPage = 'home';
   let slideIdx = 0;
@@ -931,6 +932,7 @@
     cvPage.classList.add('active');
     document.getElementById('cv-footer').style.display = 'flex';
     navBack.style.display = 'block';
+    navAdmin.style.display = 'none';
     navCV.style.display   = 'none';
     window.scrollTo(0, 0);
     currentPage = 'cv';
@@ -948,6 +950,7 @@
     if (page) {
       page.classList.add('active');
       navBack.style.display = 'block';
+      navAdmin.style.display = 'none';
       navCV.style.display   = 'block';
       window.scrollTo(0, 0);
       currentPage = id;
@@ -964,6 +967,7 @@
     document.getElementById('cv-footer').style.display = 'none';
     showHome();
     navBack.style.display = 'none';
+    navAdmin.style.display = 'block';
     navCV.style.display   = 'block';
     currentPage = 'home';
     window.scrollTo(0, 0);
@@ -981,6 +985,7 @@
     const page = document.getElementById('page-globe');
     page.classList.add('active');
     navBack.style.display = 'block';
+    navAdmin.style.display = 'none';
     navCV.style.display   = 'block';
     window.scrollTo(0, 0);
     currentPage = 'page-globe';
@@ -1005,6 +1010,7 @@
     const page = document.getElementById('page-pics');
     page.classList.add('active');
     navBack.style.display = 'block';
+    navAdmin.style.display = 'none';
     navCV.style.display   = 'block';
     window.scrollTo(0, 0);
     currentPage = 'page-pics';
