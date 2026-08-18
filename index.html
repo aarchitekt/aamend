@@ -183,6 +183,9 @@
     min-height: 100vh;
   }
 
+  #page-globe { background: #0a0a0a; }
+  body.globe-active nav a { color: #fff; }
+
   .page.active { display: flex; flex-direction: column; }
 
   #globe-canvas-wrap {
@@ -786,6 +789,7 @@
 
   function showCV() {
     hideHome();
+    document.body.classList.remove('globe-active');
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     cvPage.classList.add('active');
     document.getElementById('cv-footer').style.display = 'flex';
@@ -798,6 +802,7 @@
 
   function showProject(id) {
     hideHome();
+    document.body.classList.remove('globe-active');
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     cvPage.classList.remove('active');
     document.getElementById('cv-footer').style.display = 'none';
@@ -814,6 +819,7 @@
   }
 
   function goHome() {
+    document.body.classList.remove('globe-active');
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     cvPage.classList.remove('active');
     document.getElementById('cv-footer').style.display = 'none';
@@ -828,6 +834,7 @@
 
   function showGlobe() {
     hideHome();
+    document.body.classList.add('globe-active');
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     cvPage.classList.remove('active');
     document.getElementById('cv-footer').style.display = 'none';
@@ -868,16 +875,47 @@
       globeRenderer.setPixelRatio(window.devicePixelRatio);
       wrap.appendChild(globeRenderer.domElement);
 
-      const geo = new THREE.SphereGeometry(1, 64, 64);
-      const tex = new THREE.TextureLoader().load('assets/earth-texture.jpg');
-      const mat = new THREE.MeshPhongMaterial({ map: tex, shininess: 4 });
+      /* dark solid sphere (matches the Reflect/Memori dot-matrix globe look) */
+      const geo = new THREE.SphereGeometry(0.995, 64, 64);
+      const mat = new THREE.MeshBasicMaterial({ color: 0x0a0a0a });
       globeMesh = new THREE.Mesh(geo, mat);
       globeScene.add(globeMesh);
 
-      globeScene.add(new THREE.AmbientLight(0xffffff, 0.65));
-      const dir = new THREE.DirectionalLight(0xffffff, 0.9);
-      dir.position.set(4, 2, 5);
-      globeScene.add(dir);
+      /* soft round dot sprite, drawn once on a canvas */
+      const dotCanvas = document.createElement('canvas');
+      dotCanvas.width = dotCanvas.height = 32;
+      const dctx = dotCanvas.getContext('2d');
+      const grad = dctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+      grad.addColorStop(0, 'rgba(255,255,255,1)');
+      grad.addColorStop(0.7, 'rgba(255,255,255,0.9)');
+      grad.addColorStop(1, 'rgba(255,255,255,0)');
+      dctx.fillStyle = grad;
+      dctx.fillRect(0, 0, 32, 32);
+      const dotTex = new THREE.CanvasTexture(dotCanvas);
+
+      /* continents rendered as a field of small dots, like the Memori globe */
+      fetch('assets/land-dots.json').then(r => r.json()).then(land => {
+        const posArr = new Float32Array(land.length * 3);
+        land.forEach(([lat, lon], i) => {
+          const p = latLonToVector3(lat, lon, 1);
+          posArr[i * 3] = p.x;
+          posArr[i * 3 + 1] = p.y;
+          posArr[i * 3 + 2] = p.z;
+        });
+        const dotGeo = new THREE.BufferGeometry();
+        dotGeo.setAttribute('position', new THREE.BufferAttribute(posArr, 3));
+        const dotMat = new THREE.PointsMaterial({
+          size: 0.017,
+          map: dotTex,
+          transparent: true,
+          depthWrite: false,
+          sizeAttenuation: true,
+          color: 0xffffff,
+          opacity: 0.85
+        });
+        const dotField = new THREE.Points(dotGeo, dotMat);
+        globeMesh.add(dotField);
+      });
 
       /* lat/lon -> point on unit sphere (standard equirectangular mapping) */
       function latLonToVector3(lat, lon, radius) {
