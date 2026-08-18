@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
+const crypto = require('crypto');
 const { execFile } = require('child_process');
 const multer = require('multer');
 const sharp = require('sharp');
@@ -9,10 +10,66 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const ROOT = __dirname;
 const INDEX_PATH = path.join(ROOT, 'index.html');
+const PICS_DIR = path.join(ROOT, 'img', 'pics');
+const PICS_THUMB_DIR = path.join(ROOT, 'img', 'pics-thumb');
+const PICS_JSON_PATH = path.join(ROOT, 'assets', 'pics.json');
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 40 * 1024 * 1024 } });
 
 app.use(express.json());
+
+// ───────────────────────────────── Password gate ────────────────────────────────
+// Protects /admin and everything under /api/* (except the login call itself).
+// Deliberately simple (in-memory sessions, no DB) since this is a single-user
+// tool. When run locally this barely matters; when hosted publicly (see
+// render.yaml) it's the only thing standing between the internet and your
+// git repo, so keep ADMIN_PASSWORD set via an environment variable there
+// rather than relying on the hardcoded fallback below.
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Frankfurt1998';
+const SESSION_COOKIE = 'aamend_admin_session';
+const sessions = new Set();
+
+function parseCookies(req) {
+  const header = req.headers.cookie || '';
+  const out = {};
+  header.split(';').forEach(part => {
+    const idx = part.indexOf('=');
+    if (idx > -1) out[part.slice(0, idx).trim()] = decodeURIComponent(part.slice(idx + 1).trim());
+  });
+  return out;
+}
+
+function isAuthed(req) {
+  const cookies = parseCookies(req);
+  return !!(cookies[SESSION_COOKIE] && sessions.has(cookies[SESSION_COOKIE]));
+}
+
+function requireAuth(req, res, next) {
+  if (isAuthed(req)) return next();
+  res.status(401).json({ error: 'not authenticated' });
+}
+
+app.post('/api/login', (req, res) => {
+  const { password } = req.body || {};
+  if (password === ADMIN_PASSWORD) {
+    const token = crypto.randomBytes(24).toString('hex');
+    sessions.add(token);
+    res.setHeader('Set-Cookie', `${SESSION_COOKIE}=${token}; HttpOnly; Path=/; Max-Age=${60 * 60 * 24 * 7}; SameSite=Lax`);
+    res.json({ ok: true });
+  } else {
+    res.status(401).json({ ok: false, error: 'Falsches Passwort.' });
+  }
+});
+
+app.post('/api/logout', (req, res) => {
+  const cookies = parseCookies(req);
+  if (cookies[SESSION_COOKIE]) sessions.delete(cookies[SESSION_COOKIE]);
+  res.setHeader('Set-Cookie', `${SESSION_COOKIE}=; HttpOnly; Path=/; Max-Age=0`);
+  res.json({ ok: true });
+});
+
+app.get('/api/session', (req, res) => res.json({ authed: isAuthed(req) }));
+
 app.use(express.static(ROOT, { extensions: ['html'] }));
 
 // ───────────────────────── helpers: safe, targeted HTML surgery ─────────────────────────
@@ -163,7 +220,7 @@ async function processUpload(buffer) {
 }
 
 // ───────────────────────────────── API: read project data ─────────────────────────────────
-app.get('/api/projects', (req, res) => {
+app.get('/api/projects', requireAuth, (req, res) => {
   const html = fs.readFileSync(INDEX_PATH, 'utf8');
 
   const homeItems = extractHomeItems(html).map((it, i) => ({ index: i, pageId: it.pageId, images: it.images }));
@@ -183,7 +240,7 @@ app.get('/api/projects', (req, res) => {
 });
 
 // ───────────────────────────────── API: replace an image file in place ─────────────────────
-app.post('/api/replace-image', upload.single('image'), async (req, res) => {
+app.post('/api/replace-image', requireAuth, upload.single('image'), async (req, res) => {
   try {
     const relPath = req.body.path;
     if (!relPath || relPath.includes('..')) return res.status(400).json({ error: 'invalid path' });
@@ -219,7 +276,7 @@ app.post('/api/replace-image', upload.single('image'), async (req, res) => {
 });
 
 // ───────────────────────────────── API: add a new image to a project's slideshow ────────────
-app.post('/api/add-image', upload.single('image'), async (req, res) => {
+app.post('/api/add-image', requireAuth, upload.single('image'), async (req, res) => {
   try {
     const { pageId } = req.body;
     if (!pageId || !req.file) return res.status(400).json({ error: 'missing pageId or file' });
@@ -267,7 +324,7 @@ app.post('/api/add-image', upload.single('image'), async (req, res) => {
 });
 
 // ───────────────────────────────── API: reorder a project's slideshow images ────────────────
-app.post('/api/reorder-images', (req, res) => {
+app.post('/api/reorder-images', requireAuth, (req, res) => {
   try {
     const { pageId, order } = req.body;
     if (!pageId || !Array.isArray(order)) return res.status(400).json({ error: 'missing pageId or order' });
@@ -298,7 +355,7 @@ app.post('/api/reorder-images', (req, res) => {
 });
 
 // ───────────────────────────────── API: delete an image from a project's slideshow ──────────
-app.post('/api/delete-image', (req, res) => {
+app.post('/api/delete-image', requireAuth, (req, res) => {
   try {
     const { pageId, src } = req.body;
     if (!pageId || !src) return res.status(400).json({ error: 'missing pageId or src' });
@@ -328,7 +385,7 @@ app.post('/api/delete-image', (req, res) => {
 });
 
 // ───────────────────────────────── API: edit project-meta text ──────────────────────────────
-app.post('/api/update-meta', (req, res) => {
+app.post('/api/update-meta', requireAuth, (req, res) => {
   try {
     const { pageId, col1, col2 } = req.body;
     if (!pageId) return res.status(400).json({ error: 'missing pageId' });
@@ -355,7 +412,7 @@ app.post('/api/update-meta', (req, res) => {
 });
 
 // ───────────────────────────────── API: reorder home-feed project thumbnails ────────────────
-app.post('/api/reorder-home', (req, res) => {
+app.post('/api/reorder-home', requireAuth, (req, res) => {
   try {
     const { order } = req.body;
     if (!Array.isArray(order)) return res.status(400).json({ error: 'missing order' });
@@ -380,7 +437,7 @@ app.post('/api/reorder-home', (req, res) => {
 });
 
 // ───────────────────────────────── API: add a brand-new project ─────────────────────────────
-app.post('/api/add-project', upload.single('image'), async (req, res) => {
+app.post('/api/add-project', requireAuth, upload.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'no image' });
 
@@ -445,7 +502,7 @@ app.post('/api/add-project', upload.single('image'), async (req, res) => {
 });
 
 // ───────────────────────────────── API: publish (git add/commit/push) ───────────────────────
-app.post('/api/publish', (req, res) => {
+app.post('/api/publish', requireAuth, (req, res) => {
   const message = (req.body && req.body.message) || 'Update site via admin tool';
   const run = (cmd, args) => new Promise((resolve, reject) => {
     execFile(cmd, args, { cwd: ROOT }, (err, stdout, stderr) => {
@@ -461,12 +518,189 @@ app.post('/api/publish', (req, res) => {
         return res.json({ ok: true, changed: false, message: 'Keine Änderungen.' });
       }
       await run('git', ['commit', '-m', message]);
-      await run('git', ['push']);
+      // When hosted (not run on the user's own machine), plain `git push` has
+      // no credentials to use. GIT_PUSH_URL (set as a host env var, e.g.
+      // https://<token>@github.com/aarchitekt/aamend.git) supplies them
+      // without ever putting the token in code or in this repo.
+      const pushUrl = process.env.GIT_PUSH_URL;
+      if (pushUrl) {
+        await run('git', ['push', pushUrl, 'HEAD:main']);
+      } else {
+        await run('git', ['push']);
+      }
       res.json({ ok: true, changed: true, message: 'Veröffentlicht. Live in ~1 Minute.' });
     } catch (e) {
       res.status(500).json({ ok: false, error: e.message });
     }
   })();
+});
+
+// ───────────────────────────────── API: CV / about page text ───────────────────────────────
+// Deliberately kept as raw HTML round-trip (not the plain-text scheme used for project meta)
+// because the bio paragraphs use inline <strong> on specific words mid-sentence — flattening
+// to plain text on every save would silently destroy that emphasis.
+function getCvData(html) {
+  const paras = [...html.matchAll(/<p class="cv-text">([\s\S]*?)<\/p>/g)].map(m => m[1]);
+  const skillsAnchor = `<div class="cv-section" style="font-family:'Courier New',monospace`;
+  const skillsIdx = html.indexOf(skillsAnchor);
+  let skillsHtml = '';
+  if (skillsIdx !== -1) {
+    const block = findDivBlock(html, skillsIdx);
+    skillsHtml = html.slice(block.openEnd, block.closeStart).trim();
+  }
+  const emailM = /<div class="place" style="font-size:0\.85rem">([\s\S]*?)<\/div>/.exec(html);
+  const locMs = [...html.matchAll(/<div class="location">([\s\S]*?)<\/div>/g)];
+  return {
+    bio1: paras[0] || '',
+    bio2: paras[1] || '',
+    skillsHtml,
+    email: emailM ? emailM[1] : '',
+    phone1: locMs[0] ? locMs[0][1] : '',
+    phone2: locMs[1] ? locMs[1][1] : '',
+  };
+}
+
+app.get('/api/cv', requireAuth, (req, res) => {
+  const html = fs.readFileSync(INDEX_PATH, 'utf8');
+  res.json(getCvData(html));
+});
+
+app.post('/api/update-cv', requireAuth, (req, res) => {
+  try {
+    const { bio1, bio2, skillsHtml, email, phone1, phone2 } = req.body || {};
+    let html = fs.readFileSync(INDEX_PATH, 'utf8');
+
+    let paraCount = 0;
+    html = html.replace(/<p class="cv-text">([\s\S]*?)<\/p>/g, (m) => {
+      paraCount++;
+      if (paraCount === 1) return `<p class="cv-text">${bio1 || ''}</p>`;
+      if (paraCount === 2) return `<p class="cv-text">${bio2 || ''}</p>`;
+      return m;
+    });
+
+    const skillsAnchor = `<div class="cv-section" style="font-family:'Courier New',monospace`;
+    const skillsIdx = html.indexOf(skillsAnchor);
+    if (skillsIdx !== -1 && typeof skillsHtml === 'string') {
+      const block = findDivBlock(html, skillsIdx);
+      html = html.slice(0, block.openEnd) + `\n    ${skillsHtml}\n  ` + html.slice(block.closeStart);
+    }
+
+    if (typeof email === 'string') {
+      html = html.replace(/(<div class="place" style="font-size:0\.85rem">)([\s\S]*?)(<\/div>)/, `$1${email}$3`);
+    }
+    let locCount = 0;
+    html = html.replace(/(<div class="location">)([\s\S]*?)(<\/div>)/g, (m, a, inner, c) => {
+      locCount++;
+      if (locCount === 1 && typeof phone1 === 'string') return `${a}${phone1}${c}`;
+      if (locCount === 2 && typeof phone2 === 'string') return `${a}${phone2}${c}`;
+      return m;
+    });
+
+    fs.writeFileSync(INDEX_PATH, html);
+    res.json({ ok: true });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: String(e) });
+  }
+});
+
+// ───────────────────────────────── API: Pics page (img/pics + assets/pics.json) ─────────────
+// The Pics slideshow and the Globe page both read assets/pics.json ({thumb, full, lat, lon}).
+// full lives in img/pics/, thumb lives in the separate, smaller img/pics-thumb/ (used for the
+// Globe markers) — both must stay in sync with the JSON on every add/delete/rotate.
+function readPicsJson() {
+  if (!fs.existsSync(PICS_JSON_PATH)) return [];
+  return JSON.parse(fs.readFileSync(PICS_JSON_PATH, 'utf8'));
+}
+function writePicsJson(arr) {
+  fs.writeFileSync(PICS_JSON_PATH, JSON.stringify(arr, null, 2));
+}
+async function writeThumb(fromPath, toPath) {
+  await sharp(fromPath).resize({ width: 500, height: 500, fit: 'inside', withoutEnlargement: true })
+    .jpeg({ quality: 80 }).toFile(toPath + '.tmp');
+  fs.renameSync(toPath + '.tmp', toPath);
+}
+
+app.get('/api/pics', requireAuth, (req, res) => {
+  res.json(readPicsJson());
+});
+
+app.post('/api/pics/add', requireAuth, upload.array('images', 40), async (req, res) => {
+  try {
+    if (!req.files || !req.files.length) return res.status(400).json({ error: 'no files' });
+    const items = readPicsJson();
+    const existing = new Set(items.map(i => i.full));
+    const added = [];
+    for (const file of req.files) {
+      const base = path.basename(file.originalname, path.extname(file.originalname))
+        .replace(/[^a-zA-Z0-9_-]/g, '_') || 'pic';
+      let filename = `${base}.jpg`;
+      let counter = 1;
+      while (fs.existsSync(path.join(PICS_DIR, filename)) || existing.has(filename)) {
+        filename = `${base}-${counter}.jpg`;
+        counter++;
+      }
+      existing.add(filename);
+
+      let img = sharp(file.buffer).rotate();
+      const meta = await img.metadata();
+      const MAX_DIM = 2400;
+      if (Math.max(meta.width || 0, meta.height || 0) > MAX_DIM) {
+        img = img.resize({ width: MAX_DIM, height: MAX_DIM, fit: 'inside', withoutEnlargement: true });
+      }
+      const fullPath = path.join(PICS_DIR, filename);
+      await img.flatten({ background: '#ffffff' }).jpeg({ quality: 86, progressive: true, mozjpeg: true }).toFile(fullPath);
+      await writeThumb(fullPath, path.join(PICS_THUMB_DIR, filename));
+
+      const entry = { thumb: filename, full: filename, lat: 0, lon: 0 };
+      items.push(entry);
+      added.push(entry);
+    }
+    writePicsJson(items);
+    res.json({ ok: true, added });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: String(e) });
+  }
+});
+
+app.post('/api/pics/delete', requireAuth, (req, res) => {
+  try {
+    const { full } = req.body || {};
+    if (!full) return res.status(400).json({ error: 'missing full' });
+    const items = readPicsJson();
+    const entry = items.find(i => i.full === full);
+    if (!entry) return res.status(404).json({ error: 'not found' });
+    writePicsJson(items.filter(i => i.full !== full));
+    const fullPath = path.join(PICS_DIR, entry.full);
+    const thumbPath = path.join(PICS_THUMB_DIR, entry.thumb);
+    if (fs.existsSync(fullPath)) fs.unlinkSync(fullPath);
+    if (fs.existsSync(thumbPath)) fs.unlinkSync(thumbPath);
+    res.json({ ok: true });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: String(e) });
+  }
+});
+
+app.post('/api/pics/rotate', requireAuth, async (req, res) => {
+  try {
+    const { full, deg } = req.body || {};
+    if (!full || ![90, -90, 180].includes(deg)) return res.status(400).json({ error: 'bad params' });
+    const items = readPicsJson();
+    const entry = items.find(i => i.full === full);
+    if (!entry) return res.status(404).json({ error: 'not found' });
+    const fullPath = path.join(PICS_DIR, entry.full);
+    if (!fs.existsSync(fullPath)) return res.status(404).json({ error: 'file missing' });
+    const tmp = fullPath + '.tmp';
+    await sharp(fullPath).rotate(deg).jpeg({ quality: 90, progressive: true, mozjpeg: true }).toFile(tmp);
+    fs.renameSync(tmp, fullPath);
+    await writeThumb(fullPath, path.join(PICS_THUMB_DIR, entry.thumb));
+    res.json({ ok: true });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: String(e) });
+  }
 });
 
 app.get('/admin', (req, res) => res.sendFile(path.join(ROOT, 'admin.html')));

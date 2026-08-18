@@ -1,0 +1,32 @@
+# Optional: deploy the admin tool (server.js) to Render.com so it's reachable
+# from any browser, not just localhost.
+#
+# Steps (one-time, ~5 minutes):
+#   1. Go to render.com, sign in with GitHub, click "New +" -> "Blueprint".
+#   2. Pick the aarchitekt/aamend repo. Render finds this file automatically.
+#   3. It will ask you to fill in the two secret env vars below:
+#        - ADMIN_PASSWORD: the admin tool's login password
+#        - GIT_PUSH_URL:   https://<YOUR_GITHUB_TOKEN>@github.com/aarchitekt/aamend.git
+#          (create a token at github.com/settings/tokens -> "Fine-grained tokens",
+#           scoped to just this repo, "Contents: Read and write" permission only)
+#   4. Deploy. Render gives you a URL like https://aamend-admin.onrender.com —
+#      that's your admin tool, reachable from any browser.
+#   5. Tell me that URL and I'll wire up the "−" button on the live site to point at it.
+#
+# Note: Render's free tier spins the service down after ~15 min of no traffic
+# and takes ~30-60s to wake back up on the next request — fine for an
+# occasionally-used admin tool, just expect a short delay on the first load.
+
+services:
+  - type: web
+    name: aamend-admin
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: GIT_PUSH_URL
+        sync: false
+
