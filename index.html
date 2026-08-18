@@ -768,7 +768,9 @@
 
 <div id="page-pics" class="page">
   <div class="slideshow">
-    <div class="slide-track" id="pics-slide-track" onclick="stepPicsSlide()"></div>
+    <div class="slide-track" id="pics-slide-track" onclick="stepPicsSlide(1)"></div>
+    <button class="slide-arrow prev" onclick="event.stopPropagation(); stepPicsSlide(-1)">&#8249;</button>
+    <button class="slide-arrow next" onclick="event.stopPropagation(); stepPicsSlide(1)">&#8250;</button>
   </div>
   <div class="bottom-nav">
     <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
@@ -916,12 +918,13 @@
     });
   }
 
-  function stepPicsSlide() {
+  function stepPicsSlide(dir) {
     if (!picsShuffled || !picsShuffled.length) return;
+    dir = dir || 1;
     const track = document.getElementById('pics-slide-track');
     const slides = track.children;
     slides[picsIdx].classList.remove('active');
-    picsIdx = (picsIdx + 1) % slides.length;
+    picsIdx = (picsIdx + dir + slides.length) % slides.length;
     slides[picsIdx].classList.add('active');
   }
 
