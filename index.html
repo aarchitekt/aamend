@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Aaron Amend — Architect, Paris</title>
+<title>Amend</title>
 <meta name="description" content="Aaron Amend is an architect based in Paris, currently at Plan Común. Selected projects, thesis work, and professional practice.">
 <meta property="og:title" content="Aaron Amend — Architect">
 <meta property="og:description" content="Selected architecture projects and practice, based in Paris.">
@@ -245,6 +245,34 @@
 
   #page-pics { background: #0a0a0a; }
   body.pics-active nav a { color: #fff; }
+
+  /* ── Pics: split-flap metadata board under the slideshow ── */
+  .pics-meta {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.16rem;
+    padding: 0.9rem 1rem 0;
+    min-height: 1.9rem;
+    user-select: none;
+  }
+
+  .pics-meta .flap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 0.92em;
+    height: 1.3em;
+    font-family: 'Courier New', monospace;
+    font-size: 0.78rem;
+    letter-spacing: 0;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.65);
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 2px;
+  }
 
   .page.active { display: flex; flex-direction: column; }
 
@@ -868,6 +896,7 @@
   <div class="slideshow">
     <div class="slide-track" id="pics-slide-track" onclick="stepPicsSlide()"></div>
   </div>
+  <div id="pics-meta" class="pics-meta" aria-hidden="true"></div>
   <div class="bottom-nav">
     <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
     <div class="footer-arrow">↓</div>
@@ -1036,6 +1065,7 @@
         if (i === 0) img.classList.add('active');
         track.appendChild(img);
       });
+      animatePicsMeta(picsMetaText(picsShuffled[0], 0, picsShuffled.length));
     });
   }
 
@@ -1046,6 +1076,54 @@
     slides[picsIdx].classList.remove('active');
     picsIdx = (picsIdx + 1) % slides.length;
     slides[picsIdx].classList.add('active');
+    animatePicsMeta(picsMetaText(picsShuffled[picsIdx], picsIdx, picsShuffled.length));
+  }
+
+  /* ── Split-flap ("departure board") metadata line under each photo.
+     Real GPS-derived place names are shown for photos with genuine
+     location data; the remaining photos (no reliable location) show an
+     archive index instead of a made-up place. ── */
+  const PICS_FLAP_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ,./·-';
+  let picsMetaToken = 0;
+
+  function picsMetaText(it, idx, total) {
+    if (it && it.place) return it.place;
+    const pad = n => String(n).padStart(3, '0');
+    return 'AAMEND ARCHIVE · ' + pad(idx + 1) + '/' + pad(total);
+  }
+
+  function animatePicsMeta(text) {
+    const el = document.getElementById('pics-meta');
+    if (!el) return;
+    const myToken = ++picsMetaToken;
+    const chars = text.split('');
+    el.innerHTML = '';
+    const flaps = chars.map(() => {
+      const span = document.createElement('span');
+      span.className = 'flap';
+      span.textContent = ' ';
+      el.appendChild(span);
+      return span;
+    });
+    const CYCLES = 9;
+    const STEP_MS = 32;
+    let step = 0;
+    function tick() {
+      if (myToken !== picsMetaToken) return;
+      let allDone = true;
+      flaps.forEach((span, i) => {
+        const settleAt = CYCLES + i;
+        if (step >= settleAt) {
+          span.textContent = chars[i] === ' ' ? ' ' : chars[i];
+        } else {
+          allDone = false;
+          span.textContent = PICS_FLAP_CHARS[Math.floor(Math.random() * PICS_FLAP_CHARS.length)];
+        }
+      });
+      step++;
+      if (!allDone) setTimeout(tick, STEP_MS);
+    }
+    tick();
   }
 
   function openPicsLightbox(filename) {
