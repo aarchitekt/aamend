@@ -194,6 +194,32 @@
   #globe-canvas-wrap:active { cursor: grabbing; }
   #globe-canvas-wrap canvas { display: block; }
 
+  #pics-lightbox {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    background: rgba(10,10,10,0.92);
+    align-items: center;
+    justify-content: center;
+  }
+  #pics-lightbox img {
+    max-width: 90vw;
+    max-height: 88vh;
+    object-fit: contain;
+  }
+  #pics-lightbox-close {
+    position: fixed;
+    top: 1.5rem;
+    right: 2rem;
+    color: #fff;
+    font-size: 2.5rem;
+    font-weight: 300;
+    opacity: 0.7;
+    line-height: 1;
+  }
+  #pics-lightbox-close:hover { opacity: 1; }
+
   .slideshow {
     position: relative;
     width: 100%;
@@ -739,6 +765,11 @@
   </div>
 </div>
 
+<div id="pics-lightbox" onclick="closePicsLightbox(event)">
+  <span id="pics-lightbox-close" onclick="closePicsLightbox(event)">&times;</span>
+  <img id="pics-lightbox-img" src="" alt="">
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
   const home    = document.getElementById('home');
@@ -810,6 +841,18 @@
     initGlobe();
   }
 
+  function openPicsLightbox(filename) {
+    document.getElementById('pics-lightbox-img').src = 'img/pics/' + encodeURIComponent(filename);
+    document.getElementById('pics-lightbox').style.display = 'flex';
+  }
+  function closePicsLightbox(e) {
+    if (e && e.target.tagName === 'IMG') return;
+    document.getElementById('pics-lightbox').style.display = 'none';
+  }
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closePicsLightbox();
+  });
+
   /* ── Globe (Pics) ── */
   let globeInited = false;
   let globeRenderer, globeScene, globeCamera, globeMesh;
@@ -836,10 +879,46 @@
       dir.position.set(4, 2, 5);
       globeScene.add(dir);
 
-      let dragging = false, lastX = 0, lastY = 0, velX = 0.0025, velY = 0;
+      /* photo markers scattered evenly over the globe (Fibonacci sphere) */
+      const markers = [];
+      fetch('assets/pics.json').then(r => r.json()).then(pairs => {
+        const loader = new THREE.TextureLoader();
+        const N = pairs.length;
+        const golden = Math.PI * (3 - Math.sqrt(5));
+        pairs.forEach(([thumb, full], i) => {
+          const y = 1 - (i / (N - 1)) * 2;
+          const radiusAtY = Math.sqrt(Math.max(0, 1 - y * y));
+          const theta = golden * i;
+          const x = Math.cos(theta) * radiusAtY;
+          const z = Math.sin(theta) * radiusAtY;
+          const ptex = loader.load('img/pics-thumb/' + encodeURIComponent(thumb));
+          const pmat = new THREE.SpriteMaterial({ map: ptex, transparent: true });
+          const sprite = new THREE.Sprite(pmat);
+          sprite.position.set(x * 1.045, y * 1.045, z * 1.045);
+          sprite.scale.set(0.09, 0.09, 1);
+          sprite.userData.full = full;
+          globeMesh.add(sprite);
+          markers.push(sprite);
+        });
+      });
+
+      const raycaster = new THREE.Raycaster();
+      function globeClickAt(clientX, clientY) {
+        const rect = wrap.getBoundingClientRect();
+        const mouse = new THREE.Vector2(
+          ((clientX - rect.left) / rect.width) * 2 - 1,
+          -((clientY - rect.top) / rect.height) * 2 + 1
+        );
+        raycaster.setFromCamera(mouse, globeCamera);
+        const hits = raycaster.intersectObjects(markers);
+        if (hits.length) openPicsLightbox(hits[0].object.userData.full);
+      }
+
+      let dragging = false, lastX = 0, lastY = 0, velX = 0.0025, velY = 0, downX = 0, downY = 0;
 
       wrap.addEventListener('pointerdown', e => {
         dragging = true; lastX = e.clientX; lastY = e.clientY;
+        downX = e.clientX; downY = e.clientY;
         wrap.setPointerCapture(e.pointerId);
       });
       wrap.addEventListener('pointermove', e => {
@@ -850,7 +929,10 @@
         globeMesh.rotation.x += dy * 0.005;
         velX = dx * 0.0006; velY = dy * 0.0006;
       });
-      wrap.addEventListener('pointerup',   () => dragging = false);
+      wrap.addEventListener('pointerup',   e => {
+        dragging = false;
+        if (Math.hypot(e.clientX - downX, e.clientY - downY) < 5) globeClickAt(e.clientX, e.clientY);
+      });
       wrap.addEventListener('pointerleave',() => dragging = false);
 
       function animate() {
