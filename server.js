@@ -504,8 +504,23 @@ app.post('/api/add-project', requireAuth, upload.single('image'), async (req, re
 // ───────────────────────────────── API: publish (git add/commit/push) ───────────────────────
 app.post('/api/publish', requireAuth, (req, res) => {
   const message = (req.body && req.body.message) || 'Update site via admin tool';
+  // Hosted (Render) containers are a fresh checkout on every deploy/restart --
+  // there's no persistent ~/.gitconfig, so `git commit` has no author identity
+  // and fails with "Author identity unknown". Set it explicitly via env vars
+  // on every git call rather than relying on `git config` (which wouldn't
+  // survive a redeploy anyway). This was silently breaking every publish from
+  // the hosted admin tool -- e.g. photo rotations looked instant in the admin
+  // grid but never actually made it to the live site, since the commit (and
+  // therefore the push) never happened.
+  const GIT_ENV = {
+    ...process.env,
+    GIT_AUTHOR_NAME: 'Aaron Amend',
+    GIT_AUTHOR_EMAIL: 'aaron.amend@icloud.com',
+    GIT_COMMITTER_NAME: 'Aaron Amend',
+    GIT_COMMITTER_EMAIL: 'aaron.amend@icloud.com',
+  };
   const run = (cmd, args) => new Promise((resolve, reject) => {
-    execFile(cmd, args, { cwd: ROOT }, (err, stdout, stderr) => {
+    execFile(cmd, args, { cwd: ROOT, env: GIT_ENV }, (err, stdout, stderr) => {
       if (err) reject(new Error(stderr || stdout || err.message));
       else resolve(stdout);
     });

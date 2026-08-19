@@ -246,46 +246,6 @@
   #page-pics { background: #0a0a0a; }
   body.pics-active nav a { color: #fff; }
 
-  /* ── Pics: split-flap metadata board, overlaid near the bottom of the
-     photo itself so it's visible immediately -- no scrolling needed. ── */
-  /* Captions temporarily hidden at the user's request (2026-08) -- code/markup
-     (animatePicsMeta(), PICS_FLAP_CHARS, #pics-meta) is left fully intact so
-     this is a one-line revert whenever they're wanted back. */
-  .pics-meta { display: none !important; }
-
-  .pics-meta {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 5%;
-    z-index: 5;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 0.16rem;
-    padding: 0.6rem 1rem;
-    min-height: 1.9rem;
-    pointer-events: none;
-    user-select: none;
-  }
-
-  .pics-meta .flap {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 0.92em;
-    height: 1.3em;
-    font-family: 'Courier New', monospace;
-    font-size: 0.78rem;
-    letter-spacing: 0;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.85);
-    background: rgba(0,0,0,0.55);
-    border: 1px solid rgba(255,255,255,0.18);
-    border-radius: 2px;
-  }
-
   .page.active { display: flex; flex-direction: column; }
 
   #globe-canvas-wrap {
@@ -450,9 +410,17 @@
       border-radius: 8px;
       overflow: hidden;
     }
+    /* Fill the phone screen instead of letterboxing -- object-fit:contain
+       (inherited from .slide-track img above) left big dark bars around
+       photos whose aspect ratio didn't match the tall phone-screen box.
+       cover crops slightly instead, which reads much better in a
+       phone-screen mockup than a small photo floating in a black frame. */
     #pics-slide-track img {
+      width: 100%;
+      height: 100%;
       max-width: 100%;
       max-height: 100%;
+      object-fit: cover;
     }
     #page-pics .bottom-nav {
       position: relative;
@@ -1006,7 +974,6 @@
   <img id="pics-phone-img" src="img/iphone-frame.png" alt="">
   <div class="slideshow">
     <div class="slide-track" id="pics-slide-track" onclick="stepPicsSlide()"></div>
-    <div id="pics-meta" class="pics-meta" aria-hidden="true"></div>
   </div>
   <div class="bottom-nav">
     <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
@@ -1199,7 +1166,6 @@
         if (i === 0) img.classList.add('active');
         track.appendChild(img);
       });
-      animatePicsMeta(picsMetaText(picsShuffled[0], 0, picsShuffled.length));
     });
   }
 
@@ -1210,54 +1176,6 @@
     slides[picsIdx].classList.remove('active');
     picsIdx = (picsIdx + 1) % slides.length;
     slides[picsIdx].classList.add('active');
-    animatePicsMeta(picsMetaText(picsShuffled[picsIdx], picsIdx, picsShuffled.length));
-  }
-
-  /* ── Split-flap ("departure board") metadata line under each photo.
-     Real GPS-derived place names are shown for photos with genuine
-     location data; the remaining photos (no reliable location) show an
-     archive index instead of a made-up place. ── */
-  const PICS_FLAP_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ,./·-';
-  let picsMetaToken = 0;
-
-  function picsMetaText(it, idx, total) {
-    if (it && it.place) return it.place;
-    const pad = n => String(n).padStart(3, '0');
-    return 'AAMEND ARCHIVE · ' + pad(idx + 1) + '/' + pad(total);
-  }
-
-  function animatePicsMeta(text) {
-    const el = document.getElementById('pics-meta');
-    if (!el) return;
-    const myToken = ++picsMetaToken;
-    const chars = text.split('');
-    el.innerHTML = '';
-    const flaps = chars.map(() => {
-      const span = document.createElement('span');
-      span.className = 'flap';
-      span.textContent = ' ';
-      el.appendChild(span);
-      return span;
-    });
-    const CYCLES = 9;
-    const STEP_MS = 32;
-    let step = 0;
-    function tick() {
-      if (myToken !== picsMetaToken) return;
-      let allDone = true;
-      flaps.forEach((span, i) => {
-        const settleAt = CYCLES + i;
-        if (step >= settleAt) {
-          span.textContent = chars[i] === ' ' ? ' ' : chars[i];
-        } else {
-          allDone = false;
-          span.textContent = PICS_FLAP_CHARS[Math.floor(Math.random() * PICS_FLAP_CHARS.length)];
-        }
-      });
-      step++;
-      if (!allDone) setTimeout(tick, STEP_MS);
-    }
-    tick();
   }
 
   function openPicsLightbox(filename) {
