@@ -345,9 +345,11 @@
   .slide-track img.active,
   .slide-track video.active { display: block; }
 
-  /* Pics page: photos shown ~30% smaller than the default slideshow sizing above */
+  /* Pics page: photos shown ~30% smaller than the default slideshow sizing above.
+     max-width nudged down slightly (2026-08) -- photos sat a touch too close to
+     the screen edges on phones, wanted a bit more side margin. */
   #pics-slide-track img {
-    max-width: 64vw;
+    max-width: 58vw;
     max-height: 64vh;
   }
 
