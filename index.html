@@ -407,20 +407,16 @@
       height: calc(var(--phone-h) * (1 - 0.09 - 0.11));
       z-index: 1;
       background: #0a0a0a;
-      border-radius: 8px;
+      border-radius: 0;
       overflow: hidden;
     }
-    /* Fill the phone screen instead of letterboxing -- object-fit:contain
-       (inherited from .slide-track img above) left big dark bars around
-       photos whose aspect ratio didn't match the tall phone-screen box.
-       cover crops slightly instead, which reads much better in a
-       phone-screen mockup than a small photo floating in a black frame. */
+    /* Reverted (2026-08): object-fit:cover cropped photos far too
+       aggressively and rounded corners (inherited from the box's old
+       border-radius:8px) weren't wanted either -- back to the original
+       contain-based sizing, corners square. */
     #pics-slide-track img {
-      width: 100%;
-      height: 100%;
       max-width: 100%;
       max-height: 100%;
-      object-fit: cover;
     }
     #page-pics .bottom-nav {
       position: relative;
