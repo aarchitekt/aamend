@@ -346,10 +346,11 @@
   .slide-track video.active { display: block; }
 
   /* Pics page: photos shown ~30% smaller than the default slideshow sizing above.
-     max-width nudged down slightly (2026-08) -- photos sat a touch too close to
-     the screen edges on phones, wanted a bit more side margin. */
+     (2026-08: briefly tried 58vw here thinking phone-screen margin was the
+     issue, but the actual complaint was about the desktop phone-mockup frame
+     below, not the real-phone view -- this was fine at 64vw, reverted.) */
   #pics-slide-track img {
-    max-width: 58vw;
+    max-width: 64vw;
     max-height: 64vh;
   }
 
@@ -376,8 +377,11 @@
      percentages are keyed to the outline's exact pixel geometry (791x1600
      source; straight body edges run roughly 3.5%-95.5% of the width and
      the corners round off inside the top ~8% / bottom ~10%), with extra
-     margin so photo corners never poke past the drawn curve. Below the
-     700px breakpoint (phones) this whole treatment is skipped -- the
+     margin so photo corners never poke past the drawn curve. Left/right
+     inset nudged from 5% to 7% (2026-08) -- a touch more breathing room
+     between the photo and the drawn body lines without eating too much of
+     the photo itself (9% was tried first and read as too much margin).
+     Below the 700px breakpoint (phones) this whole treatment is skipped -- the
      slideshow just fills the screen as it always did, since on an actual
      phone you're already looking at the photos "on your phone". ── */
   #pics-phone-img { display: none; }
@@ -403,9 +407,9 @@
     }
     #page-pics .slideshow {
       position: absolute;
-      left: calc(var(--phone-left) + var(--phone-w) * 0.05);
+      left: calc(var(--phone-left) + var(--phone-w) * 0.07);
       top: calc(var(--phone-top) + var(--phone-h) * 0.09);
-      width: calc(var(--phone-w) * (1 - 0.05 - 0.05));
+      width: calc(var(--phone-w) * (1 - 0.07 - 0.07));
       height: calc(var(--phone-h) * (1 - 0.09 - 0.11));
       z-index: 1;
       background: #0a0a0a;
