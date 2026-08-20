@@ -649,7 +649,11 @@ app.get('/api/pics', requireAuth, (req, res) => {
   res.json(readPicsJson());
 });
 
-app.post('/api/pics/add', requireAuth, upload.array('images', 40), async (req, res) => {
+// 2026-08: raised from 40 -- the admin UI now sends uploads in small batches
+// (see PICS_UPLOAD_BATCH_SIZE in admin.html) so a single request should never
+// come close to this, but keeping it generous avoids a hard rejection if
+// someone scripts a bigger batch directly against the API.
+app.post('/api/pics/add', requireAuth, upload.array('images', 100), async (req, res) => {
   try {
     if (!req.files || !req.files.length) return res.status(400).json({ error: 'no files' });
     const items = readPicsJson();

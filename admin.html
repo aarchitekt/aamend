@@ -746,6 +746,16 @@ function renderPics() {
   grid.appendChild(addEl);
 }
 
+// 2026-08: uploads are now sent in small batches (not all files in one giant
+// request) -- with dozens of full-size phone photos selected at once, a single
+// multipart POST could be 100+ MB, which the free-tier admin server (limited
+// RAM, request timeout) would silently choke on: the browser tab just sits
+// there with no error, which looked like "upload does nothing" from a batch
+// of ~80 photos. Splitting into small sequential batches makes each request
+// small and fast enough to reliably succeed, and reports progress + partial
+// failures instead of failing silently.
+const PICS_UPLOAD_BATCH_SIZE = 6;
+
 function pickAndAddPics() {
   const input = document.createElement('input');
   input.type = 'file';
@@ -753,15 +763,39 @@ function pickAndAddPics() {
   input.multiple = true;
   input.onchange = async () => {
     if (!input.files.length) return;
-    const fd = new FormData();
-    [...input.files].forEach(f => fd.append('images', f));
-    try {
-      const r = await fetch('/api/pics/add', { method: 'POST', body: fd });
-      const j = await r.json();
-      if (!r.ok) throw new Error(j.error || 'Fehler');
-      loadPics();
-    } catch (e) {
-      alert('Fehler: ' + e.message);
+    const files = [...input.files];
+    // Scoped to #pics-grid specifically -- every project card on the Home tab
+    // also has its own ".add-thumb" button, so an unscoped selector here would
+    // grab an unrelated element and show upload progress on the wrong button.
+    const addEl = document.querySelector('#pics-grid .add-thumb');
+    const setStatus = (text) => { if (addEl) addEl.textContent = text; };
+
+    const batches = [];
+    for (let i = 0; i < files.length; i += PICS_UPLOAD_BATCH_SIZE) {
+      batches.push(files.slice(i, i + PICS_UPLOAD_BATCH_SIZE));
+    }
+
+    let uploaded = 0;
+    const failedBatches = [];
+    for (let b = 0; b < batches.length; b++) {
+      setStatus(`${uploaded}/${files.length}…`);
+      const fd = new FormData();
+      batches[b].forEach(f => fd.append('images', f));
+      try {
+        const r = await fetch('/api/pics/add', { method: 'POST', body: fd });
+        const j = await r.json();
+        if (!r.ok) throw new Error(j.error || 'Fehler');
+        uploaded += batches[b].length;
+      } catch (e) {
+        failedBatches.push({ batch: b + 1, count: batches[b].length, error: e.message });
+      }
+    }
+
+    setStatus('+');
+    loadPics();
+    if (failedBatches.length) {
+      const failedCount = failedBatches.reduce((s, f) => s + f.count, 0);
+      alert(`${uploaded} von ${files.length} Fotos hochgeladen. ${failedCount} fehlgeschlagen (z.B. Batch ${failedBatches[0].batch}: ${failedBatches[0].error}). Bitte nur die fehlgeschlagenen Fotos nochmal einzeln auswählen und hochladen -- ein erneutes Hochladen ALLER Fotos würde die bereits erfolgreichen ein zweites Mal (als Duplikat) anlegen.`);
     }
   };
   input.click();
