@@ -437,7 +437,7 @@ function getDragAfterElementCards(grid, x, y) {
 function pickAndAddProject() {
   const input = document.createElement('input');
   input.type = 'file';
-  input.accept = 'image/*';
+  input.accept = 'image/*,.heic,.heif,.HEIC,.HEIF';
   input.onchange = async () => {
     if (!input.files[0]) return;
     const fd = new FormData();
@@ -539,7 +539,7 @@ function makeSlideThumb(pageId, src) {
 function pickAndReplace(relSrc, el) {
   const input = document.createElement('input');
   input.type = 'file';
-  input.accept = 'image/*';
+  input.accept = 'image/*,.heic,.heif,.HEIC,.HEIF';
   input.onchange = async () => {
     if (!input.files[0]) return;
     el.classList.add('uploading');
@@ -562,7 +562,7 @@ function pickAndReplace(relSrc, el) {
 function pickAndAdd(pageId, el) {
   const input = document.createElement('input');
   input.type = 'file';
-  input.accept = 'image/*';
+  input.accept = 'image/*,.heic,.heif,.HEIC,.HEIF';
   input.onchange = async () => {
     if (!input.files[0]) return;
     const fd = new FormData();
@@ -625,24 +625,37 @@ function getDragAfterElement(grid, x, y) {
   return closest.element;
 }
 
-document.getElementById('publish-btn').addEventListener('click', async () => {
+// Shared by the manual "Veröffentlichen" button and the automatic publish
+// that now runs right after a Pics upload finishes (see pickAndAddPics) --
+// same request, same status text, same disabled-button treatment either way,
+// so uploading a photo behaves exactly like uploading it and then clicking
+// Veröffentlichen yourself, just without the extra click.
+async function publish(message) {
   const btn = document.getElementById('publish-btn');
   const status = document.getElementById('publish-status');
   btn.disabled = true;
   status.className = '';
   status.textContent = 'Veröffentliche…';
   try {
-    const r = await fetch('/api/publish', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) });
+    const r = await fetch('/api/publish', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(message ? { message } : {})
+    });
     const j = await r.json();
     if (!r.ok || !j.ok) throw new Error(j.error || 'Fehler');
+    status.className = '';
     status.textContent = j.message;
+    return true;
   } catch (e) {
     status.className = 'error';
     status.textContent = 'Fehler: ' + e.message;
+    return false;
   } finally {
     btn.disabled = false;
   }
-});
+}
+
+document.getElementById('publish-btn').addEventListener('click', () => publish());
 
 // ── CV ──
 async function loadCv() {
@@ -693,50 +706,55 @@ async function loadPics() {
   renderPics();
 }
 
+// Pulled out of renderPics() so a freshly uploaded photo can be dropped into
+// the grid immediately (see pickAndAddPics) without waiting for a full
+// reload/re-render of every existing thumbnail.
+function createThumbEl(item) {
+  const el = document.createElement('div');
+  el.className = 'thumb';
+  el.innerHTML = `
+    <img src="/img/pics-thumb/${encodeURIComponent(item.thumb)}?t=${Date.now()}" loading="lazy">
+    <div class="rotate-btns">
+      <button data-deg="-90" title="90° gegen den Uhrzeigersinn">⟲</button>
+      <button data-deg="180" title="180°">↻↻</button>
+      <button data-deg="90" title="90° im Uhrzeigersinn">⟳</button>
+    </div>
+    <button class="del-btn" title="Löschen">×</button>`;
+  el.querySelectorAll('.rotate-btns button').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      el.classList.add('uploading');
+      try {
+        const r = await fetch('/api/pics/rotate', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ full: item.full, deg: parseInt(btn.dataset.deg, 10) })
+        });
+        if (!r.ok) throw new Error('Fehler beim Drehen.');
+        el.querySelector('img').src = `/img/pics-thumb/${encodeURIComponent(item.thumb)}?t=${Date.now()}`;
+      } catch (err) {
+        alert(err.message);
+      } finally {
+        el.classList.remove('uploading');
+      }
+    });
+  });
+  el.querySelector('.del-btn').addEventListener('click', async (e) => {
+    e.stopPropagation();
+    if (!confirm('Dieses Foto löschen?')) return;
+    const r = await fetch('/api/pics/delete', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ full: item.full })
+    });
+    if (r.ok) loadPics(); else alert('Fehler beim Löschen.');
+  });
+  return el;
+}
+
 function renderPics() {
   document.getElementById('pics-count').textContent = `${PICS.length} Fotos`;
   const grid = document.getElementById('pics-grid');
   grid.innerHTML = '';
-  PICS.forEach(item => {
-    const el = document.createElement('div');
-    el.className = 'thumb';
-    el.innerHTML = `
-      <img src="/img/pics-thumb/${encodeURIComponent(item.thumb)}?t=${Date.now()}" loading="lazy">
-      <div class="rotate-btns">
-        <button data-deg="-90" title="90° gegen den Uhrzeigersinn">⟲</button>
-        <button data-deg="180" title="180°">↻↻</button>
-        <button data-deg="90" title="90° im Uhrzeigersinn">⟳</button>
-      </div>
-      <button class="del-btn" title="Löschen">×</button>`;
-    el.querySelectorAll('.rotate-btns button').forEach(btn => {
-      btn.addEventListener('click', async (e) => {
-        e.stopPropagation();
-        el.classList.add('uploading');
-        try {
-          const r = await fetch('/api/pics/rotate', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ full: item.full, deg: parseInt(btn.dataset.deg, 10) })
-          });
-          if (!r.ok) throw new Error('Fehler beim Drehen.');
-          el.querySelector('img').src = `/img/pics-thumb/${encodeURIComponent(item.thumb)}?t=${Date.now()}`;
-        } catch (err) {
-          alert(err.message);
-        } finally {
-          el.classList.remove('uploading');
-        }
-      });
-    });
-    el.querySelector('.del-btn').addEventListener('click', async (e) => {
-      e.stopPropagation();
-      if (!confirm('Dieses Foto löschen?')) return;
-      const r = await fetch('/api/pics/delete', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ full: item.full })
-      });
-      if (r.ok) loadPics(); else alert('Fehler beim Löschen.');
-    });
-    grid.appendChild(el);
-  });
+  PICS.forEach(item => grid.appendChild(createThumbEl(item)));
 
   const addEl = document.createElement('div');
   addEl.className = 'add-thumb';
@@ -759,7 +777,7 @@ const PICS_UPLOAD_BATCH_SIZE = 6;
 function pickAndAddPics() {
   const input = document.createElement('input');
   input.type = 'file';
-  input.accept = 'image/*';
+  input.accept = 'image/*,.heic,.heif,.HEIC,.HEIF';
   input.multiple = true;
   input.onchange = async () => {
     if (!input.files.length) return;
@@ -785,17 +803,41 @@ function pickAndAddPics() {
         const r = await fetch('/api/pics/add', { method: 'POST', body: fd });
         const j = await r.json();
         if (!r.ok) throw new Error(j.error || 'Fehler');
+        // Show each newly uploaded photo in the grid the moment its batch
+        // comes back -- not just once at the very end -- so a long upload
+        // (many batches) gives visible progress instead of looking stuck.
         uploaded += batches[b].length;
+        PICS.push(...j.added);
+        document.getElementById('pics-count').textContent = `${PICS.length} Fotos`;
+        j.added.forEach(item => addEl.before(createThumbEl(item)));
       } catch (e) {
         failedBatches.push({ batch: b + 1, count: batches[b].length, error: e.message });
       }
     }
 
     setStatus('+');
+    // Re-fetch once at the end as a correctness safety net (in case the
+    // client-side PICS array and the server ever drift), independent of the
+    // incremental grid updates above.
     loadPics();
+
+    // 2026-08: uploading used to leave the new photo sitting in the admin
+    // grid only -- it wasn't actually live on aamend.com until someone
+    // separately noticed and clicked "Veröffentlichen". That two-step split
+    // was the source of "I uploaded a photo but it's not on the site" -- the
+    // upload really did work, it just hadn't been published yet. So an
+    // upload now auto-publishes right after it finishes, the same request
+    // the button sends, just without waiting for a click. Only if at least
+    // one photo actually made it through -- if every batch failed, there's
+    // nothing new to publish.
+    if (uploaded > 0) {
+      const label = uploaded === 1 ? '1 neues Foto' : `${uploaded} neue Fotos`;
+      await publish(`Pics: add ${label} via admin tool`);
+    }
+
     if (failedBatches.length) {
       const failedCount = failedBatches.reduce((s, f) => s + f.count, 0);
-      alert(`${uploaded} von ${files.length} Fotos hochgeladen. ${failedCount} fehlgeschlagen (z.B. Batch ${failedBatches[0].batch}: ${failedBatches[0].error}). Bitte nur die fehlgeschlagenen Fotos nochmal einzeln auswählen und hochladen -- ein erneutes Hochladen ALLER Fotos würde die bereits erfolgreichen ein zweites Mal (als Duplikat) anlegen.`);
+      alert(`${uploaded} von ${files.length} Fotos hochgeladen${uploaded > 0 ? ' und veröffentlicht' : ''}. ${failedCount} fehlgeschlagen (z.B. Batch ${failedBatches[0].batch}: ${failedBatches[0].error}). Bitte nur die fehlgeschlagenen Fotos nochmal einzeln auswählen und hochladen -- ein erneutes Hochladen ALLER Fotos würde die bereits erfolgreichen ein zweites Mal (als Duplikat) anlegen.`);
     }
   };
   input.click();

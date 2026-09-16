@@ -208,7 +208,33 @@ async function hasRealAlpha(img, meta) {
   return !!alphaChan && alphaChan.min < 250;
 }
 
+// ── HEIC/HEIF (iPhone photos) ──
+// The prebuilt sharp binaries can read a HEIC file's header but can NOT decode its
+// HEVC-compressed pixels ("No decoding plugin installed for this compression format").
+// That made every upload of an original iPhone .HEIC photo fail with a 500 error.
+// Fix: detect HEIC by its ISO-BMFF "ftyp" brand and convert it to JPEG first with the
+// pure-JS/WASM decoder heic-convert; everything after that runs through sharp as before.
+const HEIC_BRANDS = new Set(['heic', 'heix', 'hevc', 'hevx', 'heim', 'heis', 'hevm', 'hevs']);
+function isHeic(buffer) {
+  if (!buffer || buffer.length < 16 || buffer.toString('latin1', 4, 8) !== 'ftyp') return false;
+  const boxSize = Math.min(buffer.readUInt32BE(0), buffer.length, 256);
+  for (let o = 8; o + 4 <= boxSize; o += 4) {
+    if (o === 12) continue; // minor_version, not a brand
+    const b = buffer.toString('latin1', o, o + 4);
+    if (HEIC_BRANDS.has(b)) return true;
+  }
+  return false;
+}
+async function heicToJpeg(buffer) {
+  const convert = require('heic-convert');
+  return Buffer.from(await convert({ buffer, format: 'JPEG', quality: 0.95 }));
+}
+async function decodableBuffer(buffer) {
+  return isHeic(buffer) ? heicToJpeg(buffer) : buffer;
+}
+
 async function processUpload(buffer) {
+  buffer = await decodableBuffer(buffer);
   let img = sharp(buffer).rotate();
   const meta = await img.metadata();
   const MAX_DIM = 2400;
@@ -670,7 +696,8 @@ app.post('/api/pics/add', requireAuth, upload.array('images', 100), async (req, 
       }
       existing.add(filename);
 
-      let img = sharp(file.buffer).rotate();
+      const buf = await decodableBuffer(file.buffer);
+      let img = sharp(buf).rotate();
       const meta = await img.metadata();
       const MAX_DIM = 2400;
       if (Math.max(meta.width || 0, meta.height || 0) > MAX_DIM) {
