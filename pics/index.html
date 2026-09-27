@@ -547,6 +547,20 @@
   .project-item.in-view {
     opacity: 1; transform: translateY(0);
   }
+
+  /* v26: one-pager lightbox (liquid glass) */
+  #lb{position:fixed;inset:0;z-index:9000;display:flex;align-items:center;justify-content:center;
+    background:rgba(250,250,250,.18);-webkit-backdrop-filter:blur(26px) saturate(170%);backdrop-filter:blur(26px) saturate(170%);
+    opacity:0;visibility:hidden;transition:opacity .35s ease,visibility 0s linear .35s;cursor:url('/assets/cursor-hand.png') 12 2,pointer}
+  #lb.open{opacity:1;visibility:visible;transition:opacity .35s ease}
+  #lb-img{max-width:86vw;max-height:84vh;object-fit:contain;display:block;
+    box-shadow:0 30px 80px rgba(0,0,0,.28);border-radius:4px;transform:scale(.97);transition:transform .35s ease,opacity .25s ease}
+  #lb.open #lb-img{transform:scale(1)}
+  #lb-img.fade{opacity:0}
+  #lb-cap{position:fixed;right:24px;bottom:20px;max-width:60vw;font-size:11px;line-height:1.35;color:#8a8a8a;text-align:right;
+    background:none;border:0;padding:0;pointer-events:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  @media (max-width:700px){#lb-img{max-width:92vw;max-height:78vh}#lb-cap{font-size:10px;right:14px;bottom:14px;max-width:80vw}}
+  body.lb-lock{overflow:hidden}
 </style>
 </head>
 <body>
@@ -570,65 +584,65 @@
 
   <div class="projects-feed">
 
-    <div class="project-item" onclick="showProject('page-project10')">
-      <img src="/img/python-3.png" alt="" style="width:27.72vw;max-width:499px;" loading="lazy">
+    <div class="project-item" onclick="openLB('page-project10')">
+      <img src="/img/opt/sm/python-3.webp" decoding="async" alt="" style="width:27.72vw;max-width:499px;" loading="eager" fetchpriority="high">
     </div>
     <div style="height:9vh;width:100%"></div>
 
-    <div class="project-item" onclick="showProject('page-pfe')">
-      <img src="/img/capella004.jpg" alt="" style="width:23.89vw;max-width:430px;" loading="lazy">
+    <div class="project-item" onclick="openLB('page-pfe')">
+      <img src="/img/opt/sm/capella004.webp" decoding="async" alt="" style="width:23.89vw;max-width:430px;" loading="eager" fetchpriority="high">
     </div>
     <div style="height:9vh;width:100%"></div>
 
-    <div class="project-item" onclick="showProject('page-project11')">
-      <img src="/img/chartreuse_gif_01.gif" alt="" style="width:15.28vw;max-width:275px;" loading="lazy">
+    <div class="project-item" onclick="openLB('page-project11')">
+      <img src="/img/opt/sm/chartreuse_gif_01.webp" decoding="async" alt="" style="width:15.28vw;max-width:275px;" loading="lazy">
     </div>
     <div style="height:9vh;width:100%"></div>
 
-    <div class="project-item" onclick="showProject('page-project6')">
-      <img src="/img/scheune_0.jpg" alt="" style="width:26.78vw;max-width:482px;" loading="lazy">
+    <div class="project-item" onclick="openLB('page-project6')">
+      <img src="/img/opt/sm/scheune_0.webp" decoding="async" alt="" style="width:26.78vw;max-width:482px;" loading="lazy">
     </div>
     <div style="height:9vh;width:100%"></div>
 
-    <div class="project-item" onclick="showProject('page-project9')">
-      <img src="/img/IMG_1359-3.png" alt="" style="width:23.89vw;max-width:430px;" loading="lazy">
+    <div class="project-item" onclick="openLB('page-project9')">
+      <img src="/img/opt/sm/IMG_1359-3.webp" decoding="async" alt="" style="width:23.89vw;max-width:430px;" loading="lazy">
     </div>
     <div style="height:9vh;width:100%"></div>
 
-    <div class="project-item" onclick="showProject('page-project1')">
-      <img src="/img/Entwurf_Beten_Perspektiven__02.png" alt="" style="width:29.61vw;max-width:533px;" loading="lazy">
+    <div class="project-item" onclick="openLB('page-project1')">
+      <img src="/img/opt/sm/Entwurf_Beten_Perspektiven__02.webp" decoding="async" alt="" style="width:29.61vw;max-width:533px;" loading="lazy">
     </div>
     <div style="height:9vh;width:100%"></div>
 
-    <div class="project-item" onclick="showProject('page-roubaix')">
-      <img src="/img/roubaix-out.jpg" alt="" style="width:29.61vw;max-width:533px;" loading="lazy">
+    <div class="project-item" onclick="openLB('page-roubaix')">
+      <img src="/img/opt/sm/roubaix-out.webp" decoding="async" alt="" style="width:29.61vw;max-width:533px;" loading="lazy">
     </div>
     <div style="height:9vh;width:100%"></div>
 
-    <div class="project-item" onclick="showProject('page-project9')">
-      <img src="/img/gifquick.gif" alt="" style="width:25.78vw;max-width:464px;" loading="lazy">
+    <div class="project-item" onclick="openLB('page-project9')">
+      <img src="/img/opt/sm/gifquick.webp" decoding="async" alt="" style="width:25.78vw;max-width:464px;" loading="lazy">
     </div>
     <div style="height:9vh;width:100%"></div>
 
-    <div class="project-item" onclick="showProject('page-project7')">
-      <img src="/img/st_24_1.jpeg" alt="" style="width:27.72vw;max-width:499px;" loading="lazy">
+    <div class="project-item" onclick="openLB('page-project7')">
+      <img src="/img/opt/sm/st_24_1.webp" decoding="async" alt="" style="width:27.72vw;max-width:499px;" loading="lazy">
     </div>
     <div style="height:9vh;width:100%"></div>
 
-    <div class="project-item" onclick="showProject('page-project4')">
-      <img src="/img/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben_3.png" alt="" style="width:31.5vw;max-width:567px;" loading="lazy">
+    <div class="project-item" onclick="openLB('page-project4')">
+      <img src="/img/opt/sm/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben_3.webp" decoding="async" alt="" style="width:31.5vw;max-width:567px;" loading="lazy">
     </div>
     <div style="height:9vh;width:100%"></div>
 
-    <div class="project-item" onclick="showProject('page-project2')">
-      <img src="/img/rendu1.jpeg" alt="" style="width:29.61vw;max-width:533px;" loading="lazy">
+    <div class="project-item" onclick="openLB('page-project2')">
+      <img src="/img/opt/sm/rendu1.webp" decoding="async" alt="" style="width:29.61vw;max-width:533px;" loading="lazy">
       <div style="height:9vh;width:100%"></div>
-      <img src="/img/PerspektiveAu_en_3KM.png" alt="" style="width:44.89vw;max-width:808px;" loading="lazy">
+      <img src="/img/opt/sm/PerspektiveAu_en_3KM.webp" decoding="async" alt="" style="width:44.89vw;max-width:808px;" loading="lazy">
     </div>
     <div style="height:9vh;width:100%"></div>
 
-    <div class="project-item" onclick="showProject('page-project8')">
-      <img src="/img/Bildschirmfoto-2024-09-11-um-13.34.53.jpeg" alt="" style="width:30.56vw;max-width:550px;" loading="lazy">
+    <div class="project-item" onclick="openLB('page-project8')">
+      <img src="/img/opt/sm/Bildschirmfoto-2024-09-11-um-13.34.53.webp" decoding="async" alt="" style="width:30.56vw;max-width:550px;" loading="lazy">
     </div>
     <div style="height:9vh;width:100%"></div>
 
@@ -687,9 +701,9 @@
 <div id="page-project10" class="page">
   <div class="slideshow" data-count="3">
     <div class="slide-track">
-    <img src="/img/paython-drawing-2.jpg" alt="">
-    <img src="/img/paythd2.jpg" alt="">
-    <img src="/img/pyth3.jpg" alt="">
+    <img data-lb="/img/opt/paython-drawing-2.webp" alt="">
+    <img data-lb="/img/opt/paythd2.webp" alt="">
+    <img data-lb="/img/opt/pyth3.webp" alt="">
     </div>
     <button class="slide-arrow prev" onclick="stepSlide(-1)">&#8249;</button>
     <button class="slide-arrow next" onclick="stepSlide(1)">&#8250;</button>
@@ -707,21 +721,21 @@
 <div id="page-pfe" class="page">
   <div class="slideshow" data-count="15">
     <div class="slide-track">
-    <img src="/img/capella004.jpg" alt="">
-    <img src="/img/capella005.jpg" alt="">
-    <img src="/img/palimsest_nolli.jpg" alt="">
-    <img src="/img/axes_dB_Map.jpg" alt="">
-    <img src="/img/capella003.jpg" alt="">
-    <img src="/img/capella002.jpg" alt="">
-    <img src="/img/0016.jpg" alt="">
-    <img src="/img/capella001.jpg" alt="">
-    <img src="/img/0020.jpg" alt="">
-    <img src="/img/Modell_1_100.jpg" alt="">
-    <img src="/img/IMG_51.jpg" alt="">
-    <img src="/img/0017.jpg" alt="">
-    <img src="/img/0013.jpg" alt="">
-    <img src="/img/0002.jpg" alt="">
-    <img src="/img/0007.jpg" alt="">
+    <img data-lb="/img/opt/capella004.webp" alt="">
+    <img data-lb="/img/opt/capella005.webp" alt="">
+    <img data-lb="/img/opt/palimsest_nolli.webp" alt="">
+    <img data-lb="/img/opt/axes_dB_Map.webp" alt="">
+    <img data-lb="/img/opt/capella003.webp" alt="">
+    <img data-lb="/img/opt/capella002.webp" alt="">
+    <img data-lb="/img/opt/0016.webp" alt="">
+    <img data-lb="/img/opt/capella001.webp" alt="">
+    <img data-lb="/img/opt/0020.webp" alt="">
+    <img data-lb="/img/opt/Modell_1_100.webp" alt="">
+    <img data-lb="/img/opt/IMG_51.webp" alt="">
+    <img data-lb="/img/opt/0017.webp" alt="">
+    <img data-lb="/img/opt/0013.webp" alt="">
+    <img data-lb="/img/opt/0002.webp" alt="">
+    <img data-lb="/img/opt/0007.webp" alt="">
     </div>
     <button class="slide-arrow prev" onclick="stepSlide(-1)">&#8249;</button>
     <button class="slide-arrow next" onclick="stepSlide(1)">&#8250;</button>
@@ -739,12 +753,12 @@
 <div id="page-project11" class="page">
   <div class="slideshow" data-count="6">
     <div class="slide-track">
-    <img src="/img/abbruch.jpg" alt="">
-    <img src="/img/done.jpg" alt="">
-    <img src="/img/Axo2.jpg" alt="">
-    <img src="/img/Axo1.jpg" alt="">
-    <img src="/img/section.jpg" alt="">
-    <img src="/img/Chartreuse-3-pics.jpg" alt="">
+    <img data-lb="/img/opt/abbruch.webp" alt="">
+    <img data-lb="/img/opt/done.webp" alt="">
+    <img data-lb="/img/opt/Axo2.webp" alt="">
+    <img data-lb="/img/opt/Axo1.webp" alt="">
+    <img data-lb="/img/opt/section.webp" alt="">
+    <img data-lb="/img/opt/Chartreuse-3-pics.webp" alt="">
     </div>
     <button class="slide-arrow prev" onclick="stepSlide(-1)">&#8249;</button>
     <button class="slide-arrow next" onclick="stepSlide(1)">&#8250;</button>
@@ -762,13 +776,13 @@
 <div id="page-project6" class="page">
   <div class="slideshow" data-count="7">
     <div class="slide-track">
-    <img src="/img/Endprasentation_verschoben_3.png" alt="">
-    <img src="/img/Endprasentation_verschoben_7.png" alt="">
-    <img src="/img/Endprasentation_verschoben_4.png" alt="">
-    <img src="/img/Endprasentation_verschoben_6.jpg" alt="">
-    <img src="/img/Endprasentation_verschoben.png" alt="">
-    <img src="/img/Endprasentation_verschoben_2.png" alt="">
-    <img src="/img/Endprasentation_verschoben_5.png" alt="">
+    <img data-lb="/img/opt/Endprasentation_verschoben_3.webp" alt="">
+    <img data-lb="/img/opt/Endprasentation_verschoben_7.webp" alt="">
+    <img data-lb="/img/opt/Endprasentation_verschoben_4.webp" alt="">
+    <img data-lb="/img/opt/Endprasentation_verschoben_6.webp" alt="">
+    <img data-lb="/img/opt/Endprasentation_verschoben.webp" alt="">
+    <img data-lb="/img/opt/Endprasentation_verschoben_2.webp" alt="">
+    <img data-lb="/img/opt/Endprasentation_verschoben_5.webp" alt="">
     </div>
     <button class="slide-arrow prev" onclick="stepSlide(-1)">&#8249;</button>
     <button class="slide-arrow next" onclick="stepSlide(1)">&#8250;</button>
@@ -786,12 +800,12 @@
 <div id="page-project9" class="page">
   <div class="slideshow" data-count="6">
     <div class="slide-track">
-    <img src="/img/gifquick.gif" alt="">
-    <img src="/img/martel2.jpg" alt="">
-    <img src="/img/martel1.jpg" alt="">
-    <img src="/img/martel.jpg" alt="">
-    <img src="/img/pic.jpg" alt="">
-    <img src="/img/pic3.jpg" alt="">
+    <img data-lb="/img/opt/gifquick.webp" alt="">
+    <img data-lb="/img/opt/martel2.webp" alt="">
+    <img data-lb="/img/opt/martel1.webp" alt="">
+    <img data-lb="/img/opt/martel.webp" alt="">
+    <img data-lb="/img/opt/pic.webp" alt="">
+    <img data-lb="/img/opt/pic3.webp" alt="">
     </div>
     <button class="slide-arrow prev" onclick="stepSlide(-1)">&#8249;</button>
     <button class="slide-arrow next" onclick="stepSlide(1)">&#8250;</button>
@@ -809,10 +823,10 @@
 <div id="page-project1" class="page">
   <div class="slideshow" data-count="4">
     <div class="slide-track">
-    <img src="/img/Entwurf_Beten_Perspektiven__02.png" alt="">
-    <img src="/img/Beten_Ansicht_Materialitat_01.png" alt="">
-    <img src="/img/konzept_kirche.png" alt="">
-    <img src="/img/Beten_Grundriss_1-50_01.png" alt="">
+    <img data-lb="/img/opt/Entwurf_Beten_Perspektiven__02.webp" alt="">
+    <img data-lb="/img/opt/Beten_Ansicht_Materialitat_01.webp" alt="">
+    <img data-lb="/img/opt/konzept_kirche.webp" alt="">
+    <img data-lb="/img/opt/Beten_Grundriss_1-50_01.webp" alt="">
     </div>
     <button class="slide-arrow prev" onclick="stepSlide(-1)">&#8249;</button>
     <button class="slide-arrow next" onclick="stepSlide(1)">&#8250;</button>
@@ -830,28 +844,28 @@
 <div id="page-roubaix" class="page">
   <div class="slideshow" data-count="22">
     <div class="slide-track">
-    <img src="/img/solutions1.jpg" alt="">
-    <img src="/img/roubaix-mensa.jpg" alt="">
-    <img src="/img/roubaix-out.jpg" alt="">
-    <img src="/img/rubaix-atrium.jpg" alt="">
-    <img src="/img/roubaix-studio.jpg" alt="">
-    <img src="/img/A3_compressed_page-0004.jpg" alt="">
-    <img src="/img/A3_compressed_page-0003.jpg" alt="">
-    <img src="/img/4.jpeg" alt="">
-    <img src="/img/A3_compressed_page-0001.jpg" alt="">
-    <img src="/img/A3_compressed_page-0002.jpg" alt="">
-    <img src="/img/3.jpeg" alt="">
-    <img src="/img/2.jpeg" alt="">
-    <img src="/img/A3_compressed_page-0005.jpg" alt="">
-    <img src="/img/A3_compressed_page-0006.jpg" alt="">
-    <img src="/img/5.jpeg" alt="">
-    <img src="/img/7.jpeg" alt="">
-    <img src="/img/A3_compressed_page-0007.jpg" alt="">
-    <img src="/img/A3_compressed_page-0008.jpg" alt="">
-    <img src="/img/A3_compressed_page-0012.jpg" alt="">
-    <img src="/img/A3_compressed_page-0011.jpg" alt="">
-    <img src="/img/A3_compressed_page-0010.jpg" alt="">
-    <img src="/img/A3_compressed_page-0009.jpg" alt="">
+    <img data-lb="/img/opt/solutions1.webp" alt="">
+    <img data-lb="/img/opt/roubaix-mensa.webp" alt="">
+    <img data-lb="/img/opt/roubaix-out.webp" alt="">
+    <img data-lb="/img/opt/rubaix-atrium.webp" alt="">
+    <img data-lb="/img/opt/roubaix-studio.webp" alt="">
+    <img data-lb="/img/opt/A3_compressed_page-0004.webp" alt="">
+    <img data-lb="/img/opt/A3_compressed_page-0003.webp" alt="">
+    <img data-lb="/img/opt/4.webp" alt="">
+    <img data-lb="/img/opt/A3_compressed_page-0001.webp" alt="">
+    <img data-lb="/img/opt/A3_compressed_page-0002.webp" alt="">
+    <img data-lb="/img/opt/3.webp" alt="">
+    <img data-lb="/img/opt/2.webp" alt="">
+    <img data-lb="/img/opt/A3_compressed_page-0005.webp" alt="">
+    <img data-lb="/img/opt/A3_compressed_page-0006.webp" alt="">
+    <img data-lb="/img/opt/5.webp" alt="">
+    <img data-lb="/img/opt/7.webp" alt="">
+    <img data-lb="/img/opt/A3_compressed_page-0007.webp" alt="">
+    <img data-lb="/img/opt/A3_compressed_page-0008.webp" alt="">
+    <img data-lb="/img/opt/A3_compressed_page-0012.webp" alt="">
+    <img data-lb="/img/opt/A3_compressed_page-0011.webp" alt="">
+    <img data-lb="/img/opt/A3_compressed_page-0010.webp" alt="">
+    <img data-lb="/img/opt/A3_compressed_page-0009.webp" alt="">
     </div>
     <button class="slide-arrow prev" onclick="stepSlide(-1)">&#8249;</button>
     <button class="slide-arrow next" onclick="stepSlide(1)">&#8250;</button>
@@ -869,15 +883,15 @@
 <div id="page-project7" class="page">
   <div class="slideshow" data-count="9">
     <div class="slide-track">
-    <img src="/img/st_24_6.jpeg" alt="">
-    <img src="/img/st_24_3.jpeg" alt="">
-    <img src="/img/st_24_2.jpeg" alt="">
-    <img src="/img/333.jpeg" alt="">
-    <img src="/img/st_24_5.jpeg" alt="">
-    <img src="/img/3334.jpg" alt="">
-    <img src="/img/st_24_1.jpeg" alt="">
-    <img src="/img/st_24_7.jpeg" alt="">
-    <img src="/img/st_24_4.jpeg" alt="">
+    <img data-lb="/img/opt/st_24_6.webp" alt="">
+    <img data-lb="/img/opt/st_24_3.webp" alt="">
+    <img data-lb="/img/opt/st_24_2.webp" alt="">
+    <img data-lb="/img/opt/333.webp" alt="">
+    <img data-lb="/img/opt/st_24_5.webp" alt="">
+    <img data-lb="/img/opt/3334.webp" alt="">
+    <img data-lb="/img/opt/st_24_1.webp" alt="">
+    <img data-lb="/img/opt/st_24_7.webp" alt="">
+    <img data-lb="/img/opt/st_24_4.webp" alt="">
     </div>
     <button class="slide-arrow prev" onclick="stepSlide(-1)">&#8249;</button>
     <button class="slide-arrow next" onclick="stepSlide(1)">&#8250;</button>
@@ -895,17 +909,17 @@
 <div id="page-project4" class="page">
   <div class="slideshow" data-count="11">
     <div class="slide-track">
-    <img src="/img/Bildschirmfoto-2022-11-25-um-15.21.33-Kopie.jpg" alt="">
-    <img src="/img/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben_3.png" alt="">
-    <img src="/img/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben_5.png" alt="">
-    <img src="/img/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben_4.png" alt="">
-    <img src="/img/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben_6.png" alt="">
-    <img src="/img/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben.png" alt="">
-    <img src="/img/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben_2.png" alt="">
-    <img src="/img/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben_81.png" alt="">
-    <img src="/img/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben_9.png" alt="">
-    <img src="/img/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben_8.png" alt="">
-    <img src="/img/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben_7.png" alt="">
+    <img data-lb="/img/opt/Bildschirmfoto-2022-11-25-um-15.21.33-Kopie.webp" alt="">
+    <img data-lb="/img/opt/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben_3.webp" alt="">
+    <img data-lb="/img/opt/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben_5.webp" alt="">
+    <img data-lb="/img/opt/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben_4.webp" alt="">
+    <img data-lb="/img/opt/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben_6.webp" alt="">
+    <img data-lb="/img/opt/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben.webp" alt="">
+    <img data-lb="/img/opt/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben_2.webp" alt="">
+    <img data-lb="/img/opt/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben_81.webp" alt="">
+    <img data-lb="/img/opt/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben_9.webp" alt="">
+    <img data-lb="/img/opt/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben_8.webp" alt="">
+    <img data-lb="/img/opt/Groninger_Hof_Amend-Henschel-Mank_210712_2_verschoben_7.webp" alt="">
     </div>
     <button class="slide-arrow prev" onclick="stepSlide(-1)">&#8249;</button>
     <button class="slide-arrow next" onclick="stepSlide(1)">&#8250;</button>
@@ -923,13 +937,13 @@
 <div id="page-project2" class="page">
   <div class="slideshow" data-count="7">
     <div class="slide-track">
-    <img src="/img/portfolio_aaron_amend_verschoben.png" alt="">
-    <img src="/img/PerspektiveAu_en_3KM.png" alt="">
-    <img src="/img/Bildschirmfoto-2022-12-05-um-13.28.33.jpg" alt="">
-    <img src="/img/faltung.png" alt="">
-    <img src="/img/grundrissclean.png" alt="">
-    <img src="/img/fassadenschnitt.png" alt="">
-    <img src="/img/Explo_Iso_200_Final_3KM.png" alt="">
+    <img data-lb="/img/opt/portfolio_aaron_amend_verschoben.webp" alt="">
+    <img data-lb="/img/opt/PerspektiveAu_en_3KM.webp" alt="">
+    <img data-lb="/img/opt/Bildschirmfoto-2022-12-05-um-13.28.33.webp" alt="">
+    <img data-lb="/img/opt/faltung.webp" alt="">
+    <img data-lb="/img/opt/grundrissclean.webp" alt="">
+    <img data-lb="/img/opt/fassadenschnitt.webp" alt="">
+    <img data-lb="/img/opt/Explo_Iso_200_Final_3KM.webp" alt="">
     </div>
     <button class="slide-arrow prev" onclick="stepSlide(-1)">&#8249;</button>
     <button class="slide-arrow next" onclick="stepSlide(1)">&#8250;</button>
@@ -947,17 +961,17 @@
 <div id="page-project8" class="page">
   <div class="slideshow" data-count="11">
     <div class="slide-track">
-    <img src="/img/Bildschirmfoto-2024-09-11-um-13.34.22.jpeg" alt="">
-    <img src="/img/Bildschirmfoto-2024-09-11-um-13.33.53.jpeg" alt="">
-    <img src="/img/Bildschirmfoto-2024-09-11-um-13.35.34.jpeg" alt="">
-    <img src="/img/Bildschirmfoto-2024-09-11-um-13.35.29.jpeg" alt="">
-    <img src="/img/Bildschirmfoto-2024-09-11-um-13.37.30.jpeg" alt="">
-    <img src="/img/Bildschirmfoto-2024-09-11-um-13.35.39.jpeg" alt="">
-    <img src="/img/Bildschirmfoto-2024-09-11-um-13.35.16.jpeg" alt="">
-    <img src="/img/Bildschirmfoto-2024-09-11-um-13.35.01.jpeg" alt="">
-    <img src="/img/Bildschirmfoto-2024-09-11-um-13.34.53.jpeg" alt="">
-    <img src="/img/Bildschirmfoto-2024-09-11-um-13.34.41.jpeg" alt="">
-    <img src="/img/Bildschirmfoto-2024-09-11-um-13.34.31.jpeg" alt="">
+    <img data-lb="/img/opt/Bildschirmfoto-2024-09-11-um-13.34.22.webp" alt="">
+    <img data-lb="/img/opt/Bildschirmfoto-2024-09-11-um-13.33.53.webp" alt="">
+    <img data-lb="/img/opt/Bildschirmfoto-2024-09-11-um-13.35.34.webp" alt="">
+    <img data-lb="/img/opt/Bildschirmfoto-2024-09-11-um-13.35.29.webp" alt="">
+    <img data-lb="/img/opt/Bildschirmfoto-2024-09-11-um-13.37.30.webp" alt="">
+    <img data-lb="/img/opt/Bildschirmfoto-2024-09-11-um-13.35.39.webp" alt="">
+    <img data-lb="/img/opt/Bildschirmfoto-2024-09-11-um-13.35.16.webp" alt="">
+    <img data-lb="/img/opt/Bildschirmfoto-2024-09-11-um-13.35.01.webp" alt="">
+    <img data-lb="/img/opt/Bildschirmfoto-2024-09-11-um-13.34.53.webp" alt="">
+    <img data-lb="/img/opt/Bildschirmfoto-2024-09-11-um-13.34.41.webp" alt="">
+    <img data-lb="/img/opt/Bildschirmfoto-2024-09-11-um-13.34.31.webp" alt="">
     </div>
     <button class="slide-arrow prev" onclick="stepSlide(-1)">&#8249;</button>
     <button class="slide-arrow next" onclick="stepSlide(1)">&#8250;</button>
@@ -1643,6 +1657,34 @@
       goHome();
     }
   });
+</script>
+
+<div id="lb" aria-hidden="true"><img id="lb-img" alt=""><div id="lb-cap"></div></div>
+<script>
+(function(){
+  var lb=document.getElementById('lb'),im=document.getElementById('lb-img'),cap=document.getElementById('lb-cap');
+  var list=[],i=0,title='';
+  function srcs(id){var pg=document.getElementById(id);if(!pg)return[];
+    return Array.prototype.map.call(pg.querySelectorAll('.slide-track img[data-lb]'),function(e){return e.getAttribute('data-lb')});}
+  function pre(n){if(list.length){var x=new Image();x.decoding='async';x.src=list[(n+list.length)%list.length];}}
+  function show(n){i=(n+list.length)%list.length;im.classList.add('fade');
+    var t=new Image();t.src=list[i];
+    var go=function(){im.src=list[i];im.classList.remove('fade');cap.textContent=(title?title+'  ·  ':'')+(i+1)+' / '+list.length;};
+    if(t.complete)go();else{t.onload=go;t.onerror=go;}
+    pre(i+1);pre(i+2);}
+  window.openLB=function(id){list=srcs(id);if(!list.length)return;
+    var pg=document.getElementById(id),m=pg&&pg.querySelector('.project-meta .meta-col:last-child');
+    title=m?m.textContent.trim():'';
+    lb.classList.add('open');lb.setAttribute('aria-hidden','false');document.body.classList.add('lb-lock');show(0);};
+  function close(){lb.classList.remove('open');lb.setAttribute('aria-hidden','true');document.body.classList.remove('lb-lock');}
+  im.addEventListener('click',function(e){e.stopPropagation();show(i+1);});
+  lb.addEventListener('click',close);
+  document.addEventListener('keydown',function(e){if(!lb.classList.contains('open'))return;
+    if(e.key==='Escape')close();else if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();show(i+1);}else if(e.key==='ArrowLeft')show(i-1);});
+  var sx=null;lb.addEventListener('touchstart',function(e){sx=e.touches[0].clientX},{passive:true});
+  lb.addEventListener('touchend',function(e){if(sx===null)return;var dx=e.changedTouches[0].clientX-sx;sx=null;
+    if(Math.abs(dx)>50){e.preventDefault();show(i+(dx<0?1:-1));}});
+})();
 </script>
 </body>
 </html>
