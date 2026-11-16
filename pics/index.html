@@ -46,10 +46,14 @@
     cursor: url('/assets/cursor-hand.png') 12 2, pointer;
   }
 
-  /* CV/about page: speaker image only over clickable elements, default arrow elsewhere */
-  #cv-page a, #cv-page button,
-  #cv-footer a, #cv-footer button {
-    cursor: url('/assets/cursor-box.png') 64 64, auto;
+  /* CV/about page: speaker image only over the about text and the skills block.
+     Drawn as a JS-positioned image: a 128px CSS cursor flickers back to the native arrow. */
+  #cv-page h2, #cv-page .cv-text, #cv-page .cv-text a, #cv-page .cv-skills {
+    cursor: none;
+  }
+  #box-cursor {
+    position: fixed; left: 0; top: 0; width: 128px; height: 128px; margin: -64px 0 0 -64px;
+    pointer-events: none; z-index: 2147483647; display: none; will-change: transform;
   }
 
   body {
@@ -517,6 +521,7 @@
   .cv-section { margin-bottom: 1.75rem; }
   .cv-skills { display: grid; grid-template-columns: auto 1fr; column-gap: 1.4em; font-family: 'Courier New', Courier, monospace; font-size: 10px; line-height: 1.5; letter-spacing: .02em; color: #6a6a6a; }
   .cv-skills .k { color: #b0b0b0; }
+  .cv-skills .lang { grid-column: 1 / -1; margin-top: 2em; }
 
   .cv-section .date {
     font-family: 'Courier New', monospace;
@@ -538,7 +543,6 @@
 
   .cv-divider {
     height: 1px;
-    background: rgba(0,0,0,0.08);
     margin: 2.5rem 0;
   }
 
@@ -547,8 +551,8 @@
   .bottom-nav a.pics-link:hover { opacity: 0.7; }
   .cv-text a { color: inherit; text-decoration: none; }
   .cv-text a:hover strong { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
-  #cv-baukarte { display: block; width: fit-content; margin: 1.5rem 0 0 auto; color: #d90000; transition: opacity 0.15s; }
-  #cv-baukarte:hover { opacity: 0.7; }
+  #cv-baukarte { display: block; width: fit-content; margin: 1.5rem 0 0 auto; color: #000; transition: color 0.15s; }
+  #cv-baukarte:hover { color: #d90000; }
   #cv-baukarte svg { display: block; width: clamp(150px, 17vw, 230px); height: auto; }
   .mask-soft {
     -webkit-mask-image: linear-gradient(to right, transparent 0, #000 11%, #000 89%, transparent 100%), linear-gradient(to bottom, transparent 0, #000 7%, #000 86%, transparent 100%);
@@ -686,12 +690,12 @@
   <div class="cv-divider"></div>
 
   <div class="cv-section cv-skills">
-    <span class="k">languages</span><span>German, English, French, Japanese (A2)</span>
     <span class="k">cad / bim</span><span>Archicad, AutoCAD, Revit, QGIS</span>
     <span class="k">3d</span><span>Cinema 4D + Corona, Blender, Rhino + Grasshopper</span>
     <span class="k">graphics</span><span>Adobe Suite</span>
     <span class="k">ai</span><span>Nano Banana (imaging), Claude (coding, analysis)</span>
     <span class="k">media</span><span>Final Cut (video), Ableton Live (sound)</span>
+    <span class="lang">German, English, French, Japanese (A2)</span>
   </div>
 
   <div class="cv-divider"></div>
@@ -1737,6 +1741,18 @@
   var sx=null;lb.addEventListener('touchstart',function(e){sx=e.touches[0].clientX},{passive:true});
   lb.addEventListener('touchend',function(e){if(sx===null)return;var dx=e.changedTouches[0].clientX-sx;sx=null;
     if(Math.abs(dx)>50){e.preventDefault();show(i+(dx<0?1:-1));}});
+})();
+</script>
+<script>
+(function(){
+  var c=document.createElement('img');c.id='box-cursor';c.src='/assets/cursor-box.png';c.alt='';document.body.appendChild(c);
+  var sel='#cv-page h2, #cv-page .cv-text, #cv-page .cv-skills';
+  document.addEventListener('pointermove',function(e){
+    var on=e.pointerType==='mouse'&&e.target.closest&&e.target.closest(sel);
+    c.style.display=on?'block':'none';
+    if(on)c.style.transform='translate3d('+e.clientX+'px,'+e.clientY+'px,0)';
+  },{passive:true});
+  document.documentElement.addEventListener('mouseleave',function(){c.style.display='none';});
 })();
 </script>
 </body>
