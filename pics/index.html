@@ -46,9 +46,9 @@
     cursor: url('/assets/cursor-hand.png') 12 2, pointer;
   }
 
-  /* CV/about page: cursor is the speaker image everywhere on the page, not the hand pointer */
-  #cv-page, #cv-page a, #cv-page button,
-  #cv-footer, #cv-footer a, #cv-footer button {
+  /* CV/about page: speaker image only over clickable elements, default arrow elsewhere */
+  #cv-page a, #cv-page button,
+  #cv-footer a, #cv-footer button {
     cursor: url('/assets/cursor-box.png') 64 64, auto;
   }
 
@@ -515,6 +515,8 @@
   .cv-text strong { font-weight: 700; color: rgba(0,0,0,0.92); }
 
   .cv-section { margin-bottom: 1.75rem; }
+  .cv-skills { display: grid; grid-template-columns: auto 1fr; column-gap: 1.4em; font-family: 'Courier New', Courier, monospace; font-size: 10px; line-height: 1.5; letter-spacing: .02em; color: #6a6a6a; }
+  .cv-skills .k { color: #b0b0b0; }
 
   .cv-section .date {
     font-family: 'Courier New', monospace;
@@ -545,8 +547,8 @@
   .bottom-nav a.pics-link:hover { opacity: 0.7; }
   .cv-text a { color: inherit; text-decoration: none; }
   .cv-text a:hover strong { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
-  #cv-baukarte { display: inline-block; margin-top: 3.5rem; color: #000; transition: color 0.15s; }
-  #cv-baukarte:hover { color: #ff0000; }
+  #cv-baukarte { display: block; width: fit-content; margin: 1.5rem 0 0 auto; color: #d90000; transition: opacity 0.15s; }
+  #cv-baukarte:hover { opacity: 0.7; }
   #cv-baukarte svg { display: block; width: clamp(150px, 17vw, 230px); height: auto; }
   .mask-soft {
     -webkit-mask-image: linear-gradient(to right, transparent 0, #000 11%, #000 89%, transparent 100%), linear-gradient(to bottom, transparent 0, #000 7%, #000 86%, transparent 100%);
@@ -656,7 +658,7 @@
     <div style="height:9vh;width:100%"></div>
 
     <div class="project-item" onclick="openLB('page-ndba')">
-      <img class="mask-soft" src="/img/opt/sm/rendu1.webp" decoding="async" alt="" style="width:29.61vw;max-width:533px;" loading="lazy">
+      <img src="/img/opt/sm/rendu1.webp" decoding="async" alt="" style="width:29.61vw;max-width:533px;" loading="lazy">
     </div>
     <div style="height:9vh;width:100%"></div>
 
@@ -678,26 +680,19 @@
 <div id="cv-page">
   <h2>about</h2>
 
-  <p class="cv-text">Aaron Amend is an architect based in Paris, currently working at <a href="https://www.dataarchitectes.com/" target="_blank" rel="noopener"><strong>DATA</strong></a>. Previously he has worked at <a href="https://www.plancomun.com/" target="_blank" rel="noopener"><strong>Plan Común</strong></a> and <a href="https://www.nicolasdorvalbory.fr/" target="_blank" rel="noopener"><strong>Nicolas Dorval-Bory Architectes</strong></a> in Paris, <a href="https://btarchitecture.jp/" target="_blank" rel="noopener"><strong>Bangkok Tokyo Architecture</strong></a> in Bangkok, and <a href="https://tiburg.at/" target="_blank" rel="noopener"><strong>tiburg Architekten</strong></a> in Vienna.</p>
+  <p class="cv-text">Aaron Amend is an architect based in Paris, currently working at <a href="https://www.dataarchitectes.com/" target="_blank" rel="noopener"><strong>DATA</strong></a>. Previously he has collaborated with <a href="https://www.plancomun.com/" target="_blank" rel="noopener"><strong>Plan Común</strong></a> and <a href="https://www.nicolasdorvalbory.fr/" target="_blank" rel="noopener"><strong>Nicolas Dorval-Bory Architectes</strong></a> in Paris, <a href="https://btarchitecture.jp/" target="_blank" rel="noopener"><strong>Bangkok Tokyo Architecture</strong></a> in Bangkok, and <a href="https://tiburg.at/" target="_blank" rel="noopener"><strong>tiburg Architekten</strong></a> in Vienna.</p>
 
   <p class="cv-text">He completed his Master of Architecture at the <strong>École Nationale Supérieure d'Architecture de Paris-Belleville</strong>, with a semester at the <strong>NTUT Taipei</strong>, after graduating with a Bachelor of Architecture from <strong>Bauhaus-Universität Weimar</strong> and an exchange semester at the <strong>TU Vienna</strong>.</p>
 
   <div class="cv-divider"></div>
 
-  <div class="cv-section" style="font-family:'Courier New',monospace;font-size:0.78rem;line-height:1.9;color:var(--gray)">
-    German, English and French, (Japanese A2)<br><br>
-    ARCHICAD (Drawing + BIM Modelling)<br>
-    AUTOCAD<br>
-    REVIT<br>
-    QGIS (Geoinformation and Analytics Software)<br><br>
-    CINEMA4D (+CORONA RENDER PLUGIN)<br>
-    BLENDER (RENDERING + ANIMATION)<br>
-    RHINO (+Grasshopper)<br><br>
-    Adobe Suite<br><br>
-    Nano Banana Ai Imaging<br>
-    Claude Ai coding and analysis<br><br>
-    Final Cut (Video)<br>
-    Ableton Live (Sound)
+  <div class="cv-section cv-skills">
+    <span class="k">languages</span><span>German, English, French, Japanese (A2)</span>
+    <span class="k">cad / bim</span><span>Archicad, AutoCAD, Revit, QGIS</span>
+    <span class="k">3d</span><span>Cinema 4D + Corona, Blender, Rhino + Grasshopper</span>
+    <span class="k">graphics</span><span>Adobe Suite</span>
+    <span class="k">ai</span><span>Nano Banana (imaging), Claude (coding, analysis)</span>
+    <span class="k">media</span><span>Final Cut (video), Ableton Live (sound)</span>
   </div>
 
   <div class="cv-divider"></div>
@@ -1707,16 +1702,17 @@
   /* v27: systematic info per project, shown as a small monospace block bottom right */
   var INFO={
     'page-project10':[['project','Python, transformation of three 1950s towers'],['type','competition'],['office','Plan Común'],['place','Porte de Bagnolet, Paris'],['year','2025']],
-    'page-pfe':[['project','Capella, a platform for music and community'],['type','PFE, final diploma project'],['school','ENSA Paris-Belleville'],['prof','Julie Lafortune, Etienne Barré, Julie Maillard'],['with','Diego Kühle Ramos'],['place','La Chapelle, Paris'],['year','2025']],
-    'page-project11':[['project','Emergency housing transformation'],['office','Plan Común'],['place','Fontenay-sous-Bois'],['year','2026']],
-    'page-project6':[['project','Deux Granges, atelier and student housing in two barns'],['type','bachelor thesis'],['school','Bauhaus-Universität Weimar'],['prof','Verena von Beckerath, Till Hoffmann'],['place','Weimar'],['year','2022']],
+    'page-pfe':[['project','Capella, a platform for music and community'],['type','PFE, final diploma project'],['','ENSA Paris-Belleville'],['','Julie Lafortune, Etienne Barré, Julie Maillard'],['','w/ Diego Kühle Ramos'],['place','La Chapelle, Paris'],['year','2025']],
+    'page-project11':[['project','Emergency housing transformation'],['type','competition, won'],['office','Plan Común'],['place','Fontenay-sous-Bois'],['year','2026']],
+    'page-project6':[['project','Deux Granges, atelier and student housing in two barns'],['type','bachelor thesis'],['','Bauhaus-Universität Weimar'],['','Prof. Verena von Beckerath, Till Hoffmann'],['place','Weimar'],['year','2022']],
     'page-project9':[['project','Appartement reprogrammé, Rue Martel'],['type','apartment renovation'],['office','Plan Común'],['place','Paris 10e'],['year','2025/26']],
-    'page-project1':[['project','Seminary and church'],['type','design studio'],['school','Bauhaus-Universität Weimar'],['prof','José Mario Gutiérrez Marquez'],['with','Undine Kunze, Vincent Mank'],['place','forest near Wittenberg']],
-    'page-roubaix':[['project','ENSA Roubaix, a factory becomes an architecture school'],['type','semester project'],['school','ENSA Paris-Belleville'],['prof','Luis Burriel'],['with','Diego Kühle Ramos'],['place','Roubaix'],['year','2023']],
-    'page-project7':[['project','Experimental music residency'],['type','design studio'],['school','ENSA Paris-Belleville'],['prof','Paul Gresham'],['place','Pantin']],
-    'page-project4':[['project','Gröninger Hof, parking garage to cooperative housing'],['type','housing studio, competition'],['school','Bauhaus-Universität Weimar'],['prof','Verena von Beckerath'],['with','Charlotte Henschel, Vincent Mank'],['place','Hamburg'],['year','2022']],
-    'page-project2':[['project','Cider factory on the Thuringia cycle path'],['type','design and construction studio'],['school','Bauhaus-Universität Weimar'],['prof','Johannes Kühn'],['with','Elias Martinez']],
-    'page-ndba':[['project','Observatoire Château-Chinon'],['type','competition, won'],['office','Nicolas Dorval-Bory Architectes'],['role','internship'],['place','Château-Chinon'],['year','2023']]
+    'page-project1':[['project','Seminary and church'],['type','design studio'],['','Bauhaus-Universität Weimar'],['','Prof. José Mario Gutiérrez Marquez'],['','w/ Undine Kunze, Vincent Mank'],['place','forest near Wittenberg']],
+    'page-roubaix':[['project','ENSA Roubaix, a factory becomes an architecture school'],['type','semester project'],['','ENSA Paris-Belleville'],['','Prof. Luis Burriel'],['','w/ Diego Kühle Ramos'],['place','Roubaix'],['year','2023']],
+    'page-project7':[['project','Experimental music residency'],['type','design studio'],['','ENSA Paris-Belleville'],['','Prof. Paul Gresham'],['place','Pantin']],
+    'page-project4':[['project','Gröninger Hof, parking garage to cooperative housing'],['type','housing studio, competition'],['','Bauhaus-Universität Weimar'],['','Prof. Verena von Beckerath'],['','w/ Charlotte Henschel, Vincent Mank'],['place','Hamburg'],['year','2022']],
+    'page-project2':[['project','Cider factory on the Thuringia cycle path'],['type','design and construction studio'],['','Bauhaus-Universität Weimar'],['','Prof. Dipl.-Ing. Johannes Kühn'],['','w/ Elias Martinez']],
+    'page-ndba':[['project','Observatoire Château-Chinon'],['type','competition, won'],['office','Nicolas Dorval-Bory Architectes'],['role','internship'],['place','Château-Chinon'],['year','2023']],
+    'page-project8':[['type','competition'],['office','Bangkok Tokyo Architecture'],['role','internship'],['place','Karuizawa, Japan'],['year','2024']]
   };
   function pad(x){return (x<10?'0':'')+x;}
   function row(k,v){var a=document.createElement('span'),b=document.createElement('span');a.className='k';a.textContent=k;b.textContent=v;cap.appendChild(a);cap.appendChild(b);}
