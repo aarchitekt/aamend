@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Amend</title>
-<meta name="description" content="Aaron Amend is an architect based in Paris, currently at Plan Común. Selected projects, thesis work, and professional practice.">
+<meta name="description" content="Aaron Amend is an architect based in Paris, currently at DATA. Selected projects, thesis work, and professional practice.">
 <meta property="og:title" content="Aaron Amend — Architect">
 <meta property="og:description" content="Selected architecture projects and practice, based in Paris.">
 <meta property="og:type" content="website">
@@ -540,6 +540,21 @@
     margin: 2.5rem 0;
   }
 
+  /* v27: red accents, linked office names, BAUKARTE wordmark, soft-masked image */
+  .bottom-nav a.pics-link, .bottom-nav a.pics-link:hover { color: #ff0000; }
+  .bottom-nav a.pics-link:hover { opacity: 0.7; }
+  .cv-text a { color: inherit; text-decoration: none; }
+  .cv-text a:hover strong { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
+  #cv-baukarte { display: inline-block; margin-top: 3.5rem; color: #000; transition: color 0.15s; }
+  #cv-baukarte:hover { color: #ff0000; }
+  #cv-baukarte svg { display: block; width: clamp(150px, 17vw, 230px); height: auto; }
+  .mask-soft {
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 11%, #000 89%, transparent 100%), linear-gradient(to bottom, transparent 0, #000 7%, #000 86%, transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0, #000 11%, #000 89%, transparent 100%), linear-gradient(to bottom, transparent 0, #000 7%, #000 86%, transparent 100%);
+    -webkit-mask-composite: source-in;
+    mask-composite: intersect;
+  }
+
   /* fade-in on scroll (home only) */
   .project-item {
     opacity: 0; transform: translateY(14px); transition: opacity .6s ease, transform .6s ease;
@@ -548,18 +563,21 @@
     opacity: 1; transform: translateY(0);
   }
 
-  /* v26: one-pager lightbox (liquid glass) */
+  /* v27: one-pager lightbox -- plain white background (no blur), systematic info block bottom right */
   #lb{position:fixed;inset:0;z-index:9000;display:flex;align-items:center;justify-content:center;
-    background:rgba(250,250,250,.18);-webkit-backdrop-filter:blur(26px) saturate(170%);backdrop-filter:blur(26px) saturate(170%);
-    opacity:0;visibility:hidden;transition:opacity .35s ease,visibility 0s linear .35s;cursor:url('/assets/cursor-hand.png') 12 2,pointer}
-  #lb.open{opacity:1;visibility:visible;transition:opacity .35s ease}
-  #lb-img{max-width:72vw;max-height:74vh;background:#fff;object-fit:contain;display:block;
-    box-shadow:0 30px 80px rgba(0,0,0,.28);border-radius:4px;transform:scale(.97);transition:transform .35s ease,opacity .25s ease}
+    background:#fff;padding-bottom:clamp(60px,10vh,120px);
+    opacity:0;visibility:hidden;transition:opacity .3s ease,visibility 0s linear .3s;cursor:url('/assets/cursor-hand.png') 12 2,pointer}
+  #lb.open{opacity:1;visibility:visible;transition:opacity .3s ease}
+  #lb-img{max-width:72vw;max-height:72vh;background:#fff;object-fit:contain;display:block;
+    transform:scale(.985);transition:transform .3s ease,opacity .25s ease}
   #lb.open #lb-img{transform:scale(1)}
   #lb-img.fade{opacity:0}
-  #lb-cap{position:fixed;right:24px;bottom:20px;max-width:60vw;font-size:11px;line-height:1.35;color:#8a8a8a;text-align:right;
-    background:none;border:0;padding:0;pointer-events:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  @media (max-width:700px){#lb-img{max-width:88vw;max-height:70vh}#lb-cap{font-size:10px;right:14px;bottom:14px;max-width:80vw}}
+  #lb-cap{position:fixed;right:24px;bottom:20px;max-width:min(46vw,440px);display:grid;grid-template-columns:auto minmax(0,max-content);
+    column-gap:1.4em;row-gap:0;font-family:'Courier New',Courier,monospace;font-size:10px;line-height:1.5;letter-spacing:.02em;
+    text-align:left;color:#6a6a6a;background:none;border:0;padding:0;pointer-events:none}
+  #lb-cap .k{color:#b0b0b0}
+  @media (max-width:700px){#lb{padding-bottom:17vh}#lb-img{max-width:90vw;max-height:60vh}
+    #lb-cap{font-size:9px;right:14px;bottom:14px;max-width:86vw;column-gap:1em}}
   body.lb-lock{overflow:hidden}
   #lb,#lb *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
   #lb-img{-webkit-user-drag:none;user-drag:none}
@@ -637,10 +655,8 @@
     </div>
     <div style="height:9vh;width:100%"></div>
 
-    <div class="project-item" onclick="openLB('page-project2')">
-      <img src="/img/opt/sm/rendu1.webp" decoding="async" alt="" style="width:29.61vw;max-width:533px;" loading="lazy">
-      <div style="height:9vh;width:100%"></div>
-      <img src="/img/opt/sm/PerspektiveAu_en_3KM.webp" decoding="async" alt="" style="width:44.89vw;max-width:808px;" loading="lazy">
+    <div class="project-item" onclick="openLB('page-ndba')">
+      <img class="mask-soft" src="/img/opt/sm/rendu1.webp" decoding="async" alt="" style="width:29.61vw;max-width:533px;" loading="lazy">
     </div>
     <div style="height:9vh;width:100%"></div>
 
@@ -654,7 +670,7 @@
   <div class="bottom-nav">
     <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
     <div class="footer-arrow">↓</div>
-    <a onclick="showPicsSlideshow()">Pics</a>
+    <a class="pics-link" onclick="showPicsSlideshow()">Pics</a>
   </div>
 </div>
 
@@ -662,7 +678,7 @@
 <div id="cv-page">
   <h2>about</h2>
 
-  <p class="cv-text">Aaron Amend is an architect based in Paris, currently collaborating with <strong>Plan Común</strong>. Previously he has worked at <strong>Nicolas Dorval-Bory Architectes</strong> in Paris, <strong>Bangkok Tokyo Architecture</strong> in Bangkok, and <strong>tiburg Architekten</strong> in Vienna.</p>
+  <p class="cv-text">Aaron Amend is an architect based in Paris, currently working at <a href="https://www.dataarchitectes.com/" target="_blank" rel="noopener"><strong>DATA</strong></a>. Previously he has worked at <a href="https://www.plancomun.com/" target="_blank" rel="noopener"><strong>Plan Común</strong></a> and <a href="https://www.nicolasdorvalbory.fr/" target="_blank" rel="noopener"><strong>Nicolas Dorval-Bory Architectes</strong></a> in Paris, <a href="https://btarchitecture.jp/" target="_blank" rel="noopener"><strong>Bangkok Tokyo Architecture</strong></a> in Bangkok, and <a href="https://tiburg.at/" target="_blank" rel="noopener"><strong>tiburg Architekten</strong></a> in Vienna.</p>
 
   <p class="cv-text">He completed his Master of Architecture at the <strong>École Nationale Supérieure d'Architecture de Paris-Belleville</strong>, with a semester at the <strong>NTUT Taipei</strong>, after graduating with a Bachelor of Architecture from <strong>Bauhaus-Universität Weimar</strong> and an exchange semester at the <strong>TU Vienna</strong>.</p>
 
@@ -691,12 +707,14 @@
     <div class="location">+49 (0) 17631300747</div>
     <div class="location">+33 (0) 749176753</div>
   </div>
+
+  <a id="cv-baukarte" href="https://baukarte.world/" target="_blank" rel="noopener" aria-label="BAUKARTE"><svg fill="currentColor" role="img" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 235.284 29.400000000000002"><path d="M19.236 0.000Q21.420 0.000 23.247 0.903Q25.074 1.806 26.145 3.444Q27.216 5.082 27.216 7.098Q27.216 12.432 22.386 13.818L22.386 13.986Q27.888 15.246 27.888 21.210Q27.888 23.478 26.775 25.221Q25.662 26.964 23.730 27.930Q21.798 28.896 19.488 28.896L0.000 28.896L0.000 0.000L19.236 0.000ZM9.282 11.256L15.666 11.256Q16.590 11.256 17.199 10.605Q17.808 9.954 17.808 8.988L17.808 8.568Q17.808 7.644 17.178 6.993Q16.548 6.342 15.666 6.342L9.282 6.342ZM9.282 22.176L16.338 22.176Q17.262 22.176 17.871 21.525Q18.480 20.874 18.480 19.908L18.480 19.488Q18.480 18.522 17.871 17.871Q17.262 17.220 16.338 17.220L9.282 17.220ZM49.038 28.896L47.820 24.822L37.698 24.822L36.480 28.896L26.988 28.896L37.530 0.000L48.324 0.000L58.866 28.896ZM39.630 18.354L45.888 18.354L42.864 8.064L42.696 8.064ZM88.122 17.262Q88.122 23.184 84.384 26.292Q80.646 29.400 73.758 29.400Q66.870 29.400 63.111 26.292Q59.352 23.184 59.352 17.262L59.352 0.000L68.634 0.000L68.634 17.136Q68.634 19.572 69.936 21.021Q71.238 22.470 73.716 22.470Q76.194 22.470 77.517 21.000Q78.840 19.530 78.840 17.136L78.840 0.000L88.122 0.000L88.122 17.262ZM110.910 0.000L122.418 0.000L112.044 11.886L122.628 28.896L111.666 28.896L105.660 18.312L100.620 22.428L100.620 28.896L91.338 28.896L91.338 0.000L100.620 0.000L100.620 12.348ZM142.686 28.896L141.468 24.822L131.346 24.822L130.128 28.896L120.636 28.896L131.178 0.000L141.972 0.000L152.514 28.896ZM133.278 18.354L139.536 18.354L136.512 8.064L136.344 8.064ZM180.426 8.862Q180.426 11.508 178.998 13.650Q177.570 15.792 174.840 16.800L181.266 28.896L170.850 28.896L165.726 18.354L162.282 18.354L162.282 28.896L153.000 28.896L153.000 0.000L170.682 0.000Q173.790 0.000 175.995 1.197Q178.200 2.394 179.313 4.431Q180.426 6.468 180.426 8.862ZM170.976 9.240Q170.976 8.106 170.220 7.350Q169.464 6.594 168.372 6.594L162.282 6.594L162.282 11.928L168.372 11.928Q169.464 11.928 170.220 11.151Q170.976 10.374 170.976 9.240ZM199.308 7.392L199.308 28.896L190.026 28.896L190.026 7.392L180.534 7.392L180.534 0.000L208.758 0.000L208.758 7.392ZM210.000 0.000L234.990 0.000L234.990 6.930L219.282 6.930L219.282 10.920L232.722 10.920L232.722 17.556L219.282 17.556L219.282 21.966L235.284 21.966L235.284 28.896L210.000 28.896Z"/></svg></a>
 </div>
 
 <div id="cv-footer" class="bottom-nav" style="display:none;width:100vw;margin-left:calc(50% - 50vw);margin-right:calc(50% - 50vw);">
   <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
   <div class="footer-arrow">↓</div>
-  <a onclick="showPicsSlideshow()">Pics</a>
+  <a class="pics-link" onclick="showPicsSlideshow()">Pics</a>
 </div>
 
 <!-- PROJECT PAGES -->
@@ -717,7 +735,7 @@
 <div class="bottom-nav">
     <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
     <div class="footer-arrow">↓</div>
-    <a onclick="showPicsSlideshow()">Pics</a>
+    <a class="pics-link" onclick="showPicsSlideshow()">Pics</a>
   </div>
 </div>
 
@@ -749,7 +767,7 @@
   <div class="bottom-nav">
     <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
     <div class="footer-arrow">↓</div>
-    <a onclick="showPicsSlideshow()">Pics</a>
+    <a class="pics-link" onclick="showPicsSlideshow()">Pics</a>
   </div>
 </div>
 
@@ -772,7 +790,7 @@
 <div class="bottom-nav">
     <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
     <div class="footer-arrow">↓</div>
-    <a onclick="showPicsSlideshow()">Pics</a>
+    <a class="pics-link" onclick="showPicsSlideshow()">Pics</a>
   </div>
 </div>
 
@@ -796,7 +814,7 @@
   <div class="bottom-nav">
     <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
     <div class="footer-arrow">↓</div>
-    <a onclick="showPicsSlideshow()">Pics</a>
+    <a class="pics-link" onclick="showPicsSlideshow()">Pics</a>
   </div>
 </div>
 
@@ -819,7 +837,7 @@
   <div class="bottom-nav">
     <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
     <div class="footer-arrow">↓</div>
-    <a onclick="showPicsSlideshow()">Pics</a>
+    <a class="pics-link" onclick="showPicsSlideshow()">Pics</a>
   </div>
 </div>
 
@@ -840,7 +858,7 @@
   <div class="bottom-nav">
     <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
     <div class="footer-arrow">↓</div>
-    <a onclick="showPicsSlideshow()">Pics</a>
+    <a class="pics-link" onclick="showPicsSlideshow()">Pics</a>
   </div>
 </div>
 
@@ -879,7 +897,7 @@
   <div class="bottom-nav">
     <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
     <div class="footer-arrow">↓</div>
-    <a onclick="showPicsSlideshow()">Pics</a>
+    <a class="pics-link" onclick="showPicsSlideshow()">Pics</a>
   </div>
 </div>
 
@@ -905,7 +923,7 @@
   <div class="bottom-nav">
     <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
     <div class="footer-arrow">↓</div>
-    <a onclick="showPicsSlideshow()">Pics</a>
+    <a class="pics-link" onclick="showPicsSlideshow()">Pics</a>
   </div>
 </div>
 
@@ -933,7 +951,7 @@
   <div class="bottom-nav">
     <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
     <div class="footer-arrow">↓</div>
-    <a onclick="showPicsSlideshow()">Pics</a>
+    <a class="pics-link" onclick="showPicsSlideshow()">Pics</a>
   </div>
 </div>
 
@@ -957,7 +975,26 @@
   <div class="bottom-nav">
     <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
     <div class="footer-arrow">↓</div>
-    <a onclick="showPicsSlideshow()">Pics</a>
+    <a class="pics-link" onclick="showPicsSlideshow()">Pics</a>
+  </div>
+</div>
+
+<div id="page-ndba" class="page">
+  <div class="slideshow" data-count="2">
+    <div class="slide-track">
+    <img data-lb="/img/opt/ndba-planset.webp" alt="">
+    <img data-lb="/img/opt/rendu1.webp" alt="">
+    </div>
+    <button class="slide-arrow prev" onclick="stepSlide(-1)">&#8249;</button>
+    <button class="slide-arrow next" onclick="stepSlide(1)">&#8250;</button>
+  </div>
+  <div class="project-meta">
+    <div class="meta-col">Nicolas Dorval-Bory Architectes<br><br>Internship, 2023</div><div class="meta-col">Observatoire Château-Chinon, competition</div>
+  </div>
+  <div class="bottom-nav">
+    <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
+    <div class="footer-arrow">↓</div>
+    <a class="pics-link" onclick="showPicsSlideshow()">Pics</a>
   </div>
 </div>
 
@@ -985,7 +1022,7 @@
 <div class="bottom-nav">
     <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
     <div class="footer-arrow">↓</div>
-    <a onclick="showPicsSlideshow()">Pics</a>
+    <a class="pics-link" onclick="showPicsSlideshow()">Pics</a>
   </div>
 </div>
 
@@ -997,7 +1034,7 @@
   <div class="bottom-nav">
     <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
     <div class="footer-arrow">↓</div>
-    <a onclick="showPicsSlideshow()">Pics</a>
+    <a class="pics-link" onclick="showPicsSlideshow()">Pics</a>
   </div>
 </div>
 
@@ -1011,7 +1048,7 @@
   <div class="bottom-nav">
     <a class="email-link" href="mailto:aaron.amend@icloud.com">Email</a>
     <div class="footer-arrow">↓</div>
-    <a onclick="showPicsSlideshow()">Pics</a>
+    <a class="pics-link" onclick="showPicsSlideshow()">Pics</a>
   </div>
 </div>
 
@@ -1666,18 +1703,34 @@
 <script>
 (function(){
   var lb=document.getElementById('lb'),im=document.getElementById('lb-img'),cap=document.getElementById('lb-cap');
-  var list=[],i=0,title='';
+  var list=[],i=0,info=[];
+  /* v27: systematic info per project, shown as a small monospace block bottom right */
+  var INFO={
+    'page-project10':[['project','Python, transformation of three 1950s towers'],['type','competition'],['office','Plan Común'],['place','Porte de Bagnolet, Paris'],['year','2025']],
+    'page-pfe':[['project','Capella, a platform for music and community'],['type','PFE, final diploma project'],['school','ENSA Paris-Belleville'],['prof','Julie Lafortune, Etienne Barré, Julie Maillard'],['with','Diego Kühle Ramos'],['place','La Chapelle, Paris'],['year','2025']],
+    'page-project11':[['project','Emergency housing transformation'],['office','Plan Común'],['place','Fontenay-sous-Bois'],['year','2026']],
+    'page-project6':[['project','Deux Granges, atelier and student housing in two barns'],['type','bachelor thesis'],['school','Bauhaus-Universität Weimar'],['prof','Verena von Beckerath, Till Hoffmann'],['place','Weimar'],['year','2022']],
+    'page-project9':[['project','Appartement reprogrammé, Rue Martel'],['type','apartment renovation'],['office','Plan Común'],['place','Paris 10e'],['year','2025/26']],
+    'page-project1':[['project','Seminary and church'],['type','design studio'],['school','Bauhaus-Universität Weimar'],['prof','José Mario Gutiérrez Marquez'],['with','Undine Kunze, Vincent Mank'],['place','forest near Wittenberg']],
+    'page-roubaix':[['project','ENSA Roubaix, a factory becomes an architecture school'],['type','semester project'],['school','ENSA Paris-Belleville'],['prof','Luis Burriel'],['with','Diego Kühle Ramos'],['place','Roubaix'],['year','2023']],
+    'page-project7':[['project','Experimental music residency'],['type','design studio'],['school','ENSA Paris-Belleville'],['prof','Paul Gresham'],['place','Pantin']],
+    'page-project4':[['project','Gröninger Hof, parking garage to cooperative housing'],['type','housing studio, competition'],['school','Bauhaus-Universität Weimar'],['prof','Verena von Beckerath'],['with','Charlotte Henschel, Vincent Mank'],['place','Hamburg'],['year','2022']],
+    'page-project2':[['project','Cider factory on the Thuringia cycle path'],['type','design and construction studio'],['school','Bauhaus-Universität Weimar'],['prof','Johannes Kühn'],['with','Elias Martinez']],
+    'page-ndba':[['project','Observatoire Château-Chinon'],['type','competition, won'],['office','Nicolas Dorval-Bory Architectes'],['role','internship'],['place','Château-Chinon'],['year','2023']]
+  };
+  function pad(x){return (x<10?'0':'')+x;}
+  function row(k,v){var a=document.createElement('span'),b=document.createElement('span');a.className='k';a.textContent=k;b.textContent=v;cap.appendChild(a);cap.appendChild(b);}
+  function drawCap(){cap.textContent='';for(var q=0;q<info.length;q++)row(info[q][0],info[q][1]);row('img',pad(i+1)+' / '+pad(list.length));}
   function srcs(id){var pg=document.getElementById(id);if(!pg)return[];
     return Array.prototype.map.call(pg.querySelectorAll('.slide-track img[data-lb]'),function(e){return e.getAttribute('data-lb')});}
   function pre(n){if(list.length){var x=new Image();x.decoding='async';x.src=list[(n+list.length)%list.length];}}
   function show(n){i=(n+list.length)%list.length;im.classList.add('fade');
     var t=new Image();t.src=list[i];
-    var go=function(){im.src=list[i];im.classList.remove('fade');cap.textContent=(title?title+'  ·  ':'')+(i+1)+' / '+list.length;};
+    var go=function(){im.src=list[i];im.classList.remove('fade');drawCap();};
     if(t.complete)go();else{t.onload=go;t.onerror=go;}
     pre(i+1);pre(i+2);}
   window.openLB=function(id){list=srcs(id);if(!list.length)return;
-    var pg=document.getElementById(id),m=pg&&pg.querySelector('.project-meta .meta-col:last-child');
-    title=m?m.textContent.trim():'';
+    info=INFO[id]||[];
     lb.classList.add('open');lb.setAttribute('aria-hidden','false');document.body.classList.add('lb-lock');show(0);};
   function close(){lb.classList.remove('open');lb.setAttribute('aria-hidden','true');document.body.classList.remove('lb-lock');}
   im.addEventListener('click',function(e){e.stopPropagation();show(i+1);});
