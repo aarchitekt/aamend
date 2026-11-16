@@ -574,10 +574,9 @@
     transform:scale(.985);transition:transform .3s ease,opacity .25s ease}
   #lb.open #lb-img{transform:scale(1)}
   #lb-img.fade{opacity:0}
-  #lb-cap{position:fixed;right:24px;bottom:20px;max-width:min(46vw,440px);display:grid;grid-template-columns:auto minmax(0,max-content);
+  #lb-cap{position:fixed;right:24px;bottom:20px;max-width:min(46vw,440px);display:grid;grid-template-columns:minmax(0,max-content);
     column-gap:1.4em;row-gap:0;font-family:'Courier New',Courier,monospace;font-size:10px;line-height:1.5;letter-spacing:.02em;
     text-align:left;color:#6a6a6a;background:none;border:0;padding:0;pointer-events:none}
-  #lb-cap .k{color:#b0b0b0}
   @media (max-width:700px){#lb{padding-bottom:17vh}#lb-img{max-width:90vw;max-height:60vh}
     #lb-cap{font-size:9px;right:14px;bottom:14px;max-width:86vw;column-gap:1em}}
   body.lb-lock{overflow:hidden}
@@ -1701,21 +1700,21 @@
   var list=[],i=0,info=[];
   /* v27: systematic info per project, shown as a small monospace block bottom right */
   var INFO={
-    'page-project10':[['project','Python, transformation of three 1950s towers'],['type','competition'],['office','Plan Común'],['place','Porte de Bagnolet, Paris'],['year','2025']],
+    'page-project10':[['project','Python, transformation of three 1950s towers'],['type','competition'],['office','w/ Plan Común'],['place','Porte de Bagnolet, Paris'],['year','2025']],
     'page-pfe':[['project','Capella, a platform for music and community'],['type','PFE, final diploma project'],['','ENSA Paris-Belleville'],['','Julie Lafortune, Etienne Barré, Julie Maillard'],['','w/ Diego Kühle Ramos'],['place','La Chapelle, Paris'],['year','2025']],
-    'page-project11':[['project','Emergency housing transformation'],['type','competition, won'],['office','Plan Común'],['place','Fontenay-sous-Bois'],['year','2026']],
+    'page-project11':[['project','Emergency housing transformation'],['type','competition, won'],['office','w/ Plan Común'],['place','Fontenay-sous-Bois'],['year','2026']],
     'page-project6':[['project','Deux Granges, atelier and student housing in two barns'],['type','bachelor thesis'],['','Bauhaus-Universität Weimar'],['','Prof. Verena von Beckerath, Till Hoffmann'],['place','Weimar'],['year','2022']],
-    'page-project9':[['project','Appartement reprogrammé, Rue Martel'],['type','apartment renovation'],['office','Plan Común'],['place','Paris 10e'],['year','2025/26']],
+    'page-project9':[['project','Appartement reprogrammé, Rue Martel'],['type','apartment renovation'],['office','w/ Plan Común'],['place','Paris 10e'],['year','2025/26']],
     'page-project1':[['project','Seminary and church'],['type','design studio'],['','Bauhaus-Universität Weimar'],['','Prof. José Mario Gutiérrez Marquez'],['','w/ Undine Kunze, Vincent Mank'],['place','forest near Wittenberg']],
     'page-roubaix':[['project','ENSA Roubaix, a factory becomes an architecture school'],['type','semester project'],['','ENSA Paris-Belleville'],['','Prof. Luis Burriel'],['','w/ Diego Kühle Ramos'],['place','Roubaix'],['year','2023']],
     'page-project7':[['project','Experimental music residency'],['type','design studio'],['','ENSA Paris-Belleville'],['','Prof. Paul Gresham'],['place','Pantin']],
     'page-project4':[['project','Gröninger Hof, parking garage to cooperative housing'],['type','housing studio, competition'],['','Bauhaus-Universität Weimar'],['','Prof. Verena von Beckerath'],['','w/ Charlotte Henschel, Vincent Mank'],['place','Hamburg'],['year','2022']],
     'page-project2':[['project','Cider factory on the Thuringia cycle path'],['type','design and construction studio'],['','Bauhaus-Universität Weimar'],['','Prof. Dipl.-Ing. Johannes Kühn'],['','w/ Elias Martinez']],
-    'page-ndba':[['project','Observatoire Château-Chinon'],['type','competition, won'],['office','Nicolas Dorval-Bory Architectes'],['role','internship'],['place','Château-Chinon'],['year','2023']],
-    'page-project8':[['type','competition'],['office','Bangkok Tokyo Architecture'],['role','internship'],['place','Karuizawa, Japan'],['year','2024']]
+    'page-ndba':[['project','Observatoire Château-Chinon'],['type','competition, won'],['office','w/ Nicolas Dorval-Bory Architectes'],['role','internship'],['place','Château-Chinon'],['year','2023']],
+    'page-project8':[['type','competition'],['office','w/ Bangkok Tokyo Architecture'],['role','internship'],['place','Karuizawa, Japan'],['year','2024']]
   };
   function pad(x){return (x<10?'0':'')+x;}
-  function row(k,v){var a=document.createElement('span'),b=document.createElement('span');a.className='k';a.textContent=k;b.textContent=v;cap.appendChild(a);cap.appendChild(b);}
+  function row(k,v){var b=document.createElement('span');b.textContent=v;cap.appendChild(b);}
   function drawCap(){cap.textContent='';for(var q=0;q<info.length;q++)row(info[q][0],info[q][1]);row('img',pad(i+1)+' / '+pad(list.length));}
   function srcs(id){var pg=document.getElementById(id);if(!pg)return[];
     return Array.prototype.map.call(pg.querySelectorAll('.slide-track img[data-lb]'),function(e){return e.getAttribute('data-lb')});}
